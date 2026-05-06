@@ -1,0 +1,21 @@
+{
+  "name": "MacroPad Configurator",
+  "short_name": "MacroPad",
+  "description": "Web configurator offline untuk MacroPad ESP32-S3",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#5b6af5",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,1457 @@
+bash
+
+cat > /home/claude/MacroPad_WebConfig/index.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MacroPad Configurator</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#5b6af5">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg0: #0a0a0f;
+  --bg1: #111118;
+  --bg2: #16161f;
+  --bg3: #1e1e2a;
+  --border: #2a2a3a;
+  --border-hi: #3d3d52;
+  --text: #e2e2f0;
+  --text-dim: #888899;
+  --text-muted: #444455;
+  --accent: #5b6af5;
+  --accent-dim: #3a4299;
+  --green: #3ddc84;
+  --green-dim: #1a5e38;
+  --red: #ff4d6a;
+  --orange: #ff9f43;
+  --purple: #a55eea;
+  --cyan: #00d2d3;
+  --yellow: #ffd32a;
+
+  --key-hid: #2a3a5c;
+  --key-hid-border: #4a6aaa;
+  --key-hid-text: #88aaff;
+
+  --key-midi: #2a4a3a;
+  --key-midi-border: #3a8a5a;
+  --key-midi-text: #55dd99;
+
+  --key-media: #4a3a1a;
+  --key-media-border: #8a6a2a;
+  --key-media-text: #ffaa44;
+
+  --key-daw: #3a2a4a;
+  --key-daw-border: #6a4a8a;
+  --key-daw-text: #cc88ff;
+
+  --key-empty: #1a1a24;
+  --key-empty-border: #2a2a38;
+  --key-empty-text: #444455;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg0);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── HEADER ─────────────────────────────────────── */
+.header {
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+.header h1 span { color: var(--accent); }
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+.badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.badge-disconnected { background: rgba(255,77,106,0.15); color: var(--red); border: 1px solid rgba(255,77,106,0.3); }
+.badge-connected { background: rgba(61,220,132,0.15); color: var(--green); border: 1px solid rgba(61,220,132,0.3); animation: pulse-green 2s infinite; }
+@keyframes pulse-green { 0%,100%{opacity:1} 50%{opacity:0.7} }
+.badge-nowebserial { background: rgba(255,159,67,0.15); color: var(--orange); border: 1px solid rgba(255,159,67,0.3); }
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #7080ff; transform: translateY(-1px); }
+.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--border-hi); background: var(--bg2); }
+.btn-danger { background: rgba(255,77,106,0.15); color: var(--red); border: 1px solid rgba(255,77,106,0.3); }
+.btn-danger:hover { background: rgba(255,77,106,0.25); }
+.btn-success { background: rgba(61,220,132,0.15); color: var(--green); border: 1px solid rgba(61,220,132,0.3); }
+.btn-success:hover { background: rgba(61,220,132,0.25); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-icon { width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+
+/* ─── PRESET BAR ─────────────────────────────────── */
+.preset-bar {
+  background: var(--bg1);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+}
+.preset-bar label { font-size: 11px; color: var(--text-dim); margin-right: 4px; white-space: nowrap; }
+.preset-tab {
+  padding: 5px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text-dim);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.preset-tab.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  color: #fff;
+}
+.preset-tab:hover:not(.active) { border-color: var(--border-hi); color: var(--text); }
+.preset-bar-divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
+.preset-bar-right { margin-left: auto; display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ─── MAIN LAYOUT ────────────────────────────────── */
+.main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+/* ─── SECTION CARD ───────────────────────────────── */
+.card {
+  background: var(--bg1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.card-header {
+  background: var(--bg2);
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+}
+.card-body { padding: 18px; }
+
+/* ─── MACROPAD VISUAL ────────────────────────────── */
+.macropad-layout {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.encoder-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.macropad-center { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.oled-mockup {
+  width: 100px;
+  height: 54px;
+  background: #0a1a0f;
+  border: 2px solid #1a3a1f;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: #3ddc84;
+  letter-spacing: 0.5px;
+}
+
+.section-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  text-align: center;
+}
+
+.bank-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.bank-selector label { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.bank-select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  flex: 1;
+  min-width: 130px;
+}
+.bank-select:focus { outline: none; border-color: var(--accent); }
+
+/* ─── KEY GRID ───────────────────────────────────── */
+.key-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+
+.key-btn {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: 1px solid var(--key-empty-border);
+  background: var(--key-empty);
+  color: var(--key-empty-text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  cursor: pointer;
+  transition: all 0.12s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 4px 2px;
+  min-height: 52px;
+  text-align: center;
+  line-height: 1.2;
+  position: relative;
+  overflow: hidden;
+}
+.key-btn:hover { transform: translateY(-2px); filter: brightness(1.3); }
+.key-btn:active { transform: translateY(0); }
+.key-btn .key-num {
+  font-size: 7px;
+  color: var(--text-muted);
+  position: absolute;
+  top: 3px;
+  left: 4px;
+}
+.key-btn .key-label {
+  font-size: 8px;
+  font-weight: 600;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 2px;
+}
+.key-btn .key-type {
+  font-size: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.7;
+}
+
+.key-btn.type-hid { background: var(--key-hid); border-color: var(--key-hid-border); color: var(--key-hid-text); }
+.key-btn.type-midi { background: var(--key-midi); border-color: var(--key-midi-border); color: var(--key-midi-text); }
+.key-btn.type-media { background: var(--key-media); border-color: var(--key-media-border); color: var(--key-media-text); }
+.key-btn.type-daw { background: var(--key-daw); border-color: var(--key-daw-border); color: var(--key-daw-text); }
+
+/* ─── ENCODER KEYS ───────────────────────────────── */
+.encoder-section { display: flex; flex-direction: column; gap: 16px; }
+.encoder-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.enc-key {
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.12s;
+  text-align: center;
+}
+.enc-key:hover { border-color: var(--border-hi); background: var(--bg3); transform: translateY(-2px); }
+.enc-key .enc-name { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+.enc-key .enc-action { font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.enc-key .enc-mode { font-size: 8px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.enc-key.type-hid { border-color: var(--key-hid-border); }
+.enc-key.type-midi { border-color: var(--key-midi-border); }
+.enc-disc {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg3);
+  margin: 0 auto 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ─── KEY PICKER MODAL ───────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal {
+  background: var(--bg1);
+  border: 1px solid var(--border-hi);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transform: scale(0.95) translateY(10px);
+  transition: transform 0.2s;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+
+.modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+.modal-subtitle { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+.modal-close {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.1s;
+}
+.modal-close:hover { color: var(--text); border-color: var(--border-hi); }
+
+.modal-tabs {
+  display: flex;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  gap: 0;
+  overflow-x: auto;
+}
+.modal-tab {
+  padding: 10px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+.modal-tab:hover { color: var(--text); }
+.modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
+.modal-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* ─── KEY PICKER CATEGORIES ──────────────────────── */
+.key-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 6px;
+}
+.picker-key {
+  padding: 8px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.1s;
+  line-height: 1.3;
+}
+.picker-key:hover { border-color: var(--accent); color: var(--text); background: var(--bg3); }
+.picker-key.selected { border-color: var(--accent); background: var(--accent-dim); color: #fff; }
+
+/* MIDI picker */
+.midi-note-picker { display: flex; flex-direction: column; gap: 12px; }
+.midi-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.midi-row label { font-size: 11px; color: var(--text-dim); min-width: 60px; }
+.midi-input {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 10px; border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  width: 80px;
+}
+.midi-input:focus { outline: none; border-color: var(--accent); }
+.piano-row { display: flex; gap: 2px; margin: 8px 0; }
+.piano-key {
+  width: 24px; height: 56px; border-radius: 0 0 4px 4px;
+  border: 1px solid #333; background: #e8e8e8; cursor: pointer;
+  transition: background 0.1s; position: relative;
+}
+.piano-key:hover { background: var(--accent); }
+.piano-key.black {
+  background: #1a1a1a; height: 36px; width: 16px;
+  margin: 0 -8px; z-index: 1; border-radius: 0 0 3px 3px;
+}
+.piano-key.black:hover { background: var(--accent); }
+.piano-key.selected { background: var(--accent) !important; }
+.piano-note-label { font-size: 7px; color: #666; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
+
+/* CC picker */
+.cc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; }
+.cc-item {
+  padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg2); cursor: pointer; transition: all 0.1s;
+}
+.cc-item:hover { border-color: var(--key-midi-border); }
+.cc-item.selected { border-color: var(--key-midi-border); background: var(--key-midi); }
+.cc-num { font-size: 9px; color: var(--text-muted); }
+.cc-name { font-size: 10px; color: var(--key-midi-text); font-weight: 600; }
+
+/* Search */
+.search-box {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 12px; border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 12px;
+  margin-bottom: 12px;
+}
+.search-box:focus { outline: none; border-color: var(--accent); }
+.search-box::placeholder { color: var(--text-muted); }
+
+/* ─── STATUS BAR ──────────────────────────────────── */
+.statusbar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--bg1); border-top: 1px solid var(--border);
+  padding: 6px 24px;
+  display: flex; align-items: center; gap: 16px;
+  font-size: 10px; color: var(--text-dim);
+  z-index: 99;
+}
+.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.red { background: var(--red); }
+.status-dot.green { background: var(--green); }
+.status-dot.orange { background: var(--orange); }
+#status-text { color: var(--text-dim); }
+.status-right { margin-left: auto; display: flex; gap: 12px; }
+
+/* ─── EXPORT/IMPORT ──────────────────────────────── */
+.io-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ─── FIRMWARE PROTOCOL INFO ─────────────────────── */
+.protocol-box {
+  background: var(--bg0); border: 1px solid var(--border);
+  border-radius: 6px; padding: 12px 14px; font-size: 10px;
+  color: var(--text-dim); line-height: 1.8;
+  font-family: 'JetBrains Mono', monospace;
+}
+.protocol-box span { color: var(--green); }
+.protocol-box em { color: var(--accent); font-style: normal; }
+
+/* ─── RESPONSIVE ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .macropad-layout { grid-template-columns: 1fr; }
+  .encoder-row { grid-template-columns: repeat(2, 1fr); }
+  .main { padding: 14px; }
+}
+
+/* ─── SCROLLBAR ──────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg0); }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 99px; }
+
+/* ─── NO WEBSERIAL NOTICE ────────────────────────── */
+.no-serial-notice {
+  background: rgba(255,159,67,0.08);
+  border: 1px solid rgba(255,159,67,0.25);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 11px;
+  color: var(--orange);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+.no-serial-notice strong { display: block; margin-bottom: 4px; font-size: 12px; }
+
+/* ─── TOAST ──────────────────────────────────────── */
+.toast-container { position: fixed; top: 70px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--bg2); border: 1px solid var(--border-hi);
+  border-radius: 8px; padding: 10px 16px;
+  font-size: 12px; color: var(--text);
+  transform: translateX(120%); transition: transform 0.3s;
+  max-width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+.toast.show { transform: translateX(0); }
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error { border-left: 3px solid var(--red); }
+.toast.info { border-left: 3px solid var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-logo">
+    <div class="logo-icon">🎛</div>
+    <div>
+      <h1>MacroPad <span>Config</span></h1>
+    </div>
+  </div>
+  <div class="header-right">
+    <span id="conn-badge" class="badge badge-disconnected">● Disconnected</span>
+    <button class="btn btn-secondary btn-sm" onclick="importJSON()">Import JSON</button>
+    <button class="btn btn-secondary btn-sm" onclick="exportJSON()">Export JSON</button>
+    <button class="btn btn-primary" id="connect-btn" onclick="toggleConnect()">Connect USB</button>
+  </div>
+</div>
+
+<!-- PRESET BAR -->
+<div class="preset-bar">
+  <label>PRESET:</label>
+  <div id="preset-tabs" style="display:flex;gap:6px;align-items:center;"></div>
+  <div class="preset-bar-divider"></div>
+  <div class="preset-bar-right">
+    <button class="btn btn-secondary btn-sm" onclick="addPreset()">+ New</button>
+    <button class="btn btn-danger btn-sm" onclick="deletePreset()">Delete</button>
+    <div class="preset-bar-divider"></div>
+    <button class="btn btn-success btn-sm" id="save-btn" onclick="saveToDevice()" disabled>↑ Save to Device</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main" style="padding-bottom: 50px;">
+
+  <!-- NO WEBSERIAL NOTICE -->
+  <div class="no-serial-notice" id="no-serial-notice" style="display:none;">
+    <strong>⚠ WebSerial Not Available</strong>
+    WebSerial API requires Google Chrome / Microsoft Edge on desktop. Firefox & Safari are not supported.
+    You can still edit and export config as JSON file, then load it manually onto the SD card.
+  </div>
+
+  <!-- LAYOUT: ENCODERS TOP ROW -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Rotary Encoders</span>
+      <div class="bank-selector">
+        <label>Bank:</label>
+        <select class="bank-select" id="enc-bank" onchange="onEncBankChange()">
+          <option value="0">1. Vol & Mix</option>
+          <option value="1">2. Synth</option>
+          <option value="2">3. Mod & FX</option>
+          <option value="3">4. EQ Ctrl</option>
+          <option value="4">5. DAW Nav</option>
+          <option value="5">6. Mixer</option>
+          <option value="6">7. Scroll</option>
+          <option value="7">8. CC Free</option>
+          <option value="8">9. Custom</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="editEncBank()">Edit Bank</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div id="encoder-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:600px;margin:0 auto;"></div>
+    </div>
+  </div>
+
+  <!-- LAYOUT: PADS + MATRIX -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Touch Pads & Matrix Keypad</span>
+    </div>
+    <div class="card-body">
+      <div class="macropad-layout">
+
+        <!-- PAD LEFT -->
+        <div>
+          <div class="section-label">Touch Pad Kiri (TTP229)</div>
+          <div class="bank-selector">
+            <label>Bank:</label>
+            <select class="bank-select" id="padl-bank" onchange="onBankChange('padL')">
+              <option value="0">1. Drum Kit</option>
+              <option value="1">2. Chromatic</option>
+              <option value="2">3. DAW Ctrl</option>
+              <option value="3">4. Media</option>
+              <option value="4">5. Shortcut</option>
+              <option value="5">6. MIDI CC</option>
+              <option value="6">7. Numpad</option>
+              <option value="7">8. Browser</option>
+              <option value="8">9. Custom</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="editBank('padL')">Edit</button>
+          </div>
+          <div class="key-grid" id="padl-grid"></div>
+        </div>
+
+        <!-- MATRIX -->
+        <div>
+          <div class="section-label">Matrix 4×4</div>
+          <div class="bank-selector">
+            <label>Bank:</label>
+            <select class="bank-select" id="mat-bank" onchange="onBankChange('mat')">
+              <option value="0">1. Drum Kit</option>
+              <option value="1">2. Chromatic</option>
+              <option value="2">3. DAW Ctrl</option>
+              <option value="3">4. Media</option>
+              <option value="4">5. Shortcut</option>
+              <option value="5">6. MIDI CC</option>
+              <option value="6">7. Numpad</option>
+              <option value="7">8. Browser</option>
+              <option value="8">9. Custom</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="editBank('mat')">Edit</button>
+          </div>
+          <div class="key-grid" id="mat-grid"></div>
+        </div>
+
+        <!-- PAD RIGHT -->
+        <div>
+          <div class="section-label">Touch Pad Kanan (TTP229)</div>
+          <div class="bank-selector">
+            <label>Bank:</label>
+            <select class="bank-select" id="padr-bank" onchange="onBankChange('padR')">
+              <option value="0">1. Drum Kit</option>
+              <option value="1">2. Chromatic</option>
+              <option value="2">3. DAW Ctrl</option>
+              <option value="3">4. Media</option>
+              <option value="4">5. Shortcut</option>
+              <option value="5">6. MIDI CC</option>
+              <option value="6">7. Numpad</option>
+              <option value="7">8. Browser</option>
+              <option value="8">9. Custom</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" onclick="editBank('padR')">Edit</button>
+          </div>
+          <div class="key-grid" id="padr-grid"></div>
+        </div>
+
+      </div><!-- end macropad-layout -->
+    </div>
+  </div>
+
+  <!-- DEVICE INFO -->
+  <div class="card">
+    <div class="card-header"><span class="card-title">Serial Protocol Info</span></div>
+    <div class="card-body">
+      <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;">
+        Add these handlers to your firmware's <code style="color:var(--accent);">handleSerialCommands()</code> in diagnostics.ino:
+      </p>
+      <div class="protocol-box">
+        <span>WCFG:PING</span>     → respond <em>WCFG:PONG:MacroPad_v1.0</em><br>
+        <span>WCFG:GET</span>      → respond <em>WCFG:CONFIG:{json}</em><br>
+        <span>WCFG:SET:{json}</span> → save config, respond <em>WCFG:OK</em><br>
+        <span>WCFG:SAVE</span>     → write SD card, respond <em>WCFG:SAVED</em><br>
+        <span>WCFG:PRESETS</span>  → respond <em>WCFG:PRESETS:{json}</em>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-secondary btn-sm" onclick="pingDevice()">Ping Device</button>
+        <button class="btn btn-secondary btn-sm" onclick="getDeviceConfig()">Get Config</button>
+        <button class="btn btn-secondary btn-sm" onclick="copyFirmwarePatch()">Copy Firmware Patch</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div class="status-dot" id="status-dot" style="background:var(--red)"></div>
+  <span id="status-text">Not connected — WebSerial ready</span>
+  <div class="status-right">
+    <span id="status-modified" style="display:none;color:var(--orange)">● Unsaved changes</span>
+    <span style="color:var(--text-muted)">MacroPad Configurator v1.0</span>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- KEY PICKER MODAL -->
+<div class="modal-overlay" id="key-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Assign Key</div>
+        <div class="modal-subtitle" id="modal-subtitle">Select an action for this key</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchTab('basic',this)">Basic Keys</div>
+      <div class="modal-tab" onclick="switchTab('combos',this)">Shortcuts</div>
+      <div class="modal-tab" onclick="switchTab('media',this)">Media</div>
+      <div class="modal-tab" onclick="switchTab('midi_note',this)">MIDI Note</div>
+      <div class="modal-tab" onclick="switchTab('midi_cc',this)">MIDI CC</div>
+      <div class="modal-tab" onclick="switchTab('daw',this)">DAW</div>
+      <div class="modal-tab" onclick="switchTab('custom',this)">Custom</div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="clearKey()">Clear</button>
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmKey()">Assign Key</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="import-input" accept=".json" style="display:none" onchange="handleImport(event)">
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  MACROPAD CONFIGURATOR — JavaScript Engine
+// ═══════════════════════════════════════════════════════
+
+// ─── WebSerial ─────────────────────────────────────────
+let port = null, reader = null, writer = null;
+let serialBuffer = '';
+const hasSerial = 'serial' in navigator;
+
+if (!hasSerial) document.getElementById('no-serial-notice').style.display = 'block';
+
+// ─── State ─────────────────────────────────────────────
+let config = {
+  presets: [
+    { name:"Preset 1", encBank:0, matBank:2, padLBank:0, padRBank:4, usbMode:0, midiCh:1 },
+    { name:"Preset 2", encBank:1, matBank:0, padLBank:5, padRBank:4, usbMode:0, midiCh:1 },
+    { name:"Preset 3", encBank:2, matBank:1, padLBank:0, padRBank:3, usbMode:1, midiCh:1 },
+    { name:"Preset 4", encBank:4, matBank:2, padLBank:1, padRBank:4, usbMode:0, midiCh:1 },
+    { name:"Preset 5", encBank:0, matBank:4, padLBank:2, padRBank:5, usbMode:1, midiCh:2 },
+    { name:"Preset 6", encBank:3, matBank:3, padLBank:3, padRBank:3, usbMode:0, midiCh:1 }
+  ],
+  customBanks: {
+    matrix: Array(9).fill(null).map((_,i) => ({ name: MAT_BANK_NAMES[i]||'Custom', keys: Array(16).fill(null) })),
+    padL:   Array(9).fill(null).map((_,i) => ({ name: MAT_BANK_NAMES[i]||'Custom', keys: Array(16).fill(null) })),
+    padR:   Array(9).fill(null).map((_,i) => ({ name: MAT_BANK_NAMES[i]||'Custom', keys: Array(16).fill(null) })),
+    enc:    Array(9).fill(null).map((_,i) => ({ name: ENC_BANK_NAMES[i]||'Custom', turns: [null,null,null,null], clicks: [null,null,null,null] }))
+  }
+};
+let activePreset = 0;
+let isModified = false;
+
+// ─── Bank Name Constants ────────────────────────────────
+const MAT_BANK_NAMES = ['Drum Kit','Chromatic','DAW Ctrl','Media','Shortcut','MIDI CC','Numpad','Browser','Custom'];
+const ENC_BANK_NAMES = ['Vol & Mix','Synth','Mod & FX','EQ Ctrl','DAW Nav','Mixer','Scroll','CC Free','Custom'];
+
+// ─── Default Bank Actions ──────────────────────────────
+const DEFAULT_MAT_BANKS = [
+  // Bank 0: Drum Kit
+  [{t:'midi',sub:'note',note:36,label:'Kick'},{t:'midi',sub:'note',note:38,label:'Snare'},{t:'midi',sub:'note',note:42,label:'HiHat'},{t:'midi',sub:'note',note:46,label:'OpenHH'},
+   {t:'midi',sub:'note',note:49,label:'Crash'},{t:'midi',sub:'note',note:51,label:'Ride'},{t:'midi',sub:'note',note:41,label:'Tom1'},{t:'midi',sub:'note',note:43,label:'Tom2'},
+   {t:'midi',sub:'note',note:45,label:'Tom3'},{t:'midi',sub:'note',note:47,label:'Tom4'},{t:'midi',sub:'note',note:37,label:'Rim'},{t:'midi',sub:'note',note:39,label:'Clap'},
+   {t:'midi',sub:'note',note:56,label:'Cowbell'},{t:'midi',sub:'note',note:54,label:'Tamb'},{t:'midi',sub:'note',note:60,label:'HiBng'},{t:'midi',sub:'note',note:62,label:'LoBng'}],
+  // Bank 1: Chromatic
+  [48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63].map(n=>({t:'midi',sub:'note',note:n,label:midiNoteName(n)})),
+  // Bank 2: DAW Ctrl
+  [{t:'hid',label:'Play',combo:'Space'},{t:'hid',label:'Stop',key:'F8'},{t:'hid',label:'Record',key:'F9'},{t:'hid',label:'Loop',combo:'Ctrl+L'},
+   {t:'hid',label:'Undo',combo:'Ctrl+Z'},{t:'hid',label:'Redo',combo:'Ctrl+Shift+Z'},{t:'hid',label:'Save',combo:'Ctrl+S'},{t:'hid',label:'Metro',key:'C'},
+   {t:'hid',label:'Marker',combo:'Ctrl+B'},{t:'hid',label:'Quant',combo:'Ctrl+U'},{t:'hid',label:'Arm',key:'Q'},{t:'hid',label:'Solo',key:'S'},
+   {t:'hid',label:'Mute',key:'M'},{t:'hid',label:'Bounce',combo:'Ctrl+Shift+E'},{t:'hid',label:'Export',combo:'Ctrl+Shift+R'},{t:'hid',label:'Tap',key:'F6'}],
+  // Bank 3: Media
+  [{t:'media',label:'Play/Pause',code:0xCD},{t:'media',label:'Next',code:0xB5},{t:'media',label:'Prev',code:0xB6},{t:'media',label:'Stop',code:0xB7},
+   {t:'media',label:'Vol+',code:0xE9},{t:'media',label:'Vol-',code:0xEA},{t:'media',label:'Mute',code:0xE2},{t:'hid',label:'PrtScr',key:'PrintScreen'},
+   {t:'hid',label:'Zoom+',combo:'Ctrl+='},{t:'hid',label:'Zoom-',combo:'Ctrl+-'},{t:'hid',label:'Fullscr',key:'F11'},{t:'hid',label:'Home',key:'Home'},
+   {t:'hid',label:'End',key:'End'},{t:'hid',label:'PgUp',key:'PageUp'},{t:'hid',label:'PgDn',key:'PageDown'},{t:'hid',label:'Esc',key:'Escape'}],
+  // Bank 4: Shortcut
+  [{t:'hid',label:'Cut',combo:'Ctrl+X'},{t:'hid',label:'Copy',combo:'Ctrl+C'},{t:'hid',label:'Paste',combo:'Ctrl+V'},{t:'hid',label:'Undo',combo:'Ctrl+Z'},
+   {t:'hid',label:'Redo',combo:'Ctrl+Shift+Z'},{t:'hid',label:'Sel All',combo:'Ctrl+A'},{t:'hid',label:'Find',combo:'Ctrl+F'},{t:'hid',label:'Save',combo:'Ctrl+S'},
+   {t:'hid',label:'New',combo:'Ctrl+N'},{t:'hid',label:'Close',combo:'Ctrl+W'},{t:'hid',label:'Bold',combo:'Ctrl+B'},{t:'hid',label:'Italic',combo:'Ctrl+I'},
+   {t:'hid',label:'Under',combo:'Ctrl+U'},{t:'hid',label:'Zoom+',combo:'Ctrl+='},{t:'hid',label:'Zoom-',combo:'Ctrl+-'},{t:'hid',label:'Zoom0',combo:'Ctrl+0'}],
+  // Bank 5: MIDI CC
+  [{t:'midi',sub:'cc',cc:64,val:127,label:'Sus ON'},{t:'midi',sub:'cc',cc:64,val:0,label:'Sus OFF'},{t:'midi',sub:'cc',cc:66,val:127,label:'Sos ON'},{t:'midi',sub:'cc',cc:66,val:0,label:'Sos OFF'},
+   {t:'midi',sub:'cc',cc:67,val:127,label:'Soft ON'},{t:'midi',sub:'cc',cc:67,val:0,label:'Soft OFF'},{t:'midi',sub:'cc',cc:1,val:0,label:'Mod 0'},{t:'midi',sub:'cc',cc:1,val:64,label:'Mod 64'},
+   {t:'midi',sub:'cc',cc:1,val:127,label:'Mod Max'},{t:'midi',sub:'cc',cc:10,val:64,label:'Pan Ctr'},{t:'midi',sub:'cc',cc:121,val:0,label:'CC Reset'},{t:'midi',sub:'panic',label:'PANIC'},
+   {t:'midi',sub:'cc',cc:80,val:127,label:'CC 80'},{t:'midi',sub:'cc',cc:81,val:127,label:'CC 81'},{t:'midi',sub:'cc',cc:82,val:127,label:'CC 82'},{t:'midi',sub:'cc',cc:83,val:127,label:'CC 83'}],
+  // Bank 6: Numpad
+  '789/456*123-0.+='.split('').map(k=>({t:'hid',label:k==='+'?'Enter':(k==='='?'+':k),key:k})),
+  // Bank 7: Browser
+  [{t:'hid',label:'Back',combo:'Alt+Left'},{t:'hid',label:'Fwd',combo:'Alt+Right'},{t:'hid',label:'Refresh',key:'F5'},{t:'hid',label:'New Tab',combo:'Ctrl+T'},
+   {t:'hid',label:'Close',combo:'Ctrl+W'},{t:'hid',label:'Reopen',combo:'Ctrl+Shift+T'},{t:'hid',label:'Next Tab',combo:'Ctrl+Tab'},{t:'hid',label:'Prev Tab',combo:'Ctrl+Shift+Tab'},
+   {t:'hid',label:'Find',combo:'Ctrl+F'},{t:'hid',label:'DevTools',key:'F12'},{t:'hid',label:'Zoom+',combo:'Ctrl+='},{t:'hid',label:'Zoom-',combo:'Ctrl+-'},
+   {t:'hid',label:'Zoom0',combo:'Ctrl+0'},{t:'hid',label:'Home',key:'Home'},{t:'hid',label:'End',key:'End'},{t:'hid',label:'Full',key:'F11'}],
+  // Bank 8: Custom
+  Array(16).fill(null)
+];
+
+const DEFAULT_ENC_BANKS = [
+  [{cc:7,label:'Volume'},{cc:11,label:'Expr'},{cc:10,label:'Pan'},{cc:91,label:'Reverb'}],
+  [{cc:74,label:'Filter'},{cc:71,label:'Reson'},{cc:73,label:'Attack'},{cc:72,label:'Release'}],
+  [{cc:1,label:'Mod'},{cc:91,label:'Reverb'},{cc:94,label:'Delay'},{cc:93,label:'Chorus'}],
+  [{cc:20,label:'Low EQ'},{cc:21,label:'Mid EQ'},{cc:22,label:'High EQ'},{cc:23,label:'Presence'}],
+  [{label:'BPM ↕',t:'hid',key:'Arrow'},{label:'Playhead ↔',t:'hid',key:'Arrow'},{label:'Loop ↔',t:'hid',combo:'Shift+Arrow'},{label:'Zoom',t:'hid',combo:'Ctrl+±'}],
+  [{cc:24,label:'Send 1'},{cc:25,label:'Send 2'},{cc:26,label:'Send 3'},{cc:7,label:'Master'}],
+  [{label:'Scroll V',t:'hid'},{label:'Scroll H',t:'hid'},{label:'Zoom ±',t:'hid'},{label:'Brush Size',t:'hid'}],
+  [{cc:28,label:'CC 28'},{cc:29,label:'CC 29'},{cc:30,label:'CC 30'},{cc:31,label:'CC 31'}],
+  [{label:'Custom 1'},{label:'Custom 2'},{label:'Custom 3'},{label:'Custom 4'}]
+];
+
+function midiNoteName(n) {
+  const names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+  return names[n%12]+(Math.floor(n/12)-1);
+}
+
+// ─── Active editing context ─────────────────────────────
+let editCtx = { section: null, index: null, type: null }; // type: 'key', 'enc_turn', 'enc_click'
+let pendingAction = null;
+let currentTab = 'basic';
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+function init() {
+  renderPresetTabs();
+  renderAll();
+  updateConnStatus();
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER
+// ═══════════════════════════════════════════════════════
+function renderAll() {
+  const p = config.presets[activePreset];
+  document.getElementById('padl-bank').value = p.padLBank;
+  document.getElementById('mat-bank').value  = p.matBank;
+  document.getElementById('padr-bank').value = p.padRBank;
+  document.getElementById('enc-bank').value  = p.encBank;
+  renderKeyGrid('padl-grid','padL', p.padLBank);
+  renderKeyGrid('mat-grid', 'mat',  p.matBank);
+  renderKeyGrid('padr-grid','padR', p.padRBank);
+  renderEncoders(p.encBank);
+}
+
+function renderKeyGrid(gridId, section, bankIdx) {
+  const grid = document.getElementById(gridId);
+  grid.innerHTML = '';
+  const bankKeys = DEFAULT_MAT_BANKS[bankIdx] || Array(16).fill(null);
+  const customKeys = config.customBanks[section]?.[bankIdx]?.keys || [];
+  for (let i = 0; i < 16; i++) {
+    const action = customKeys[i] || bankKeys[i];
+    const btn = document.createElement('button');
+    btn.className = 'key-btn ' + getTypeClass(action);
+    btn.innerHTML = `<span class="key-num">${i+1}</span>
+      <span class="key-label">${getLabel(action)}</span>
+      <span class="key-type">${getTypeTag(action)}</span>`;
+    btn.onclick = () => openKeyPicker(section, i, 'key');
+    btn.title = getLabel(action);
+    grid.appendChild(btn);
+  }
+}
+
+function renderEncoders(bankIdx) {
+  const grid = document.getElementById('encoder-grid');
+  grid.innerHTML = '';
+  const bankDefs = DEFAULT_ENC_BANKS[bankIdx] || [];
+  const encNames = ['Enc 1','Enc 2','Enc 3','Enc 4'];
+  for (let i = 0; i < 4; i++) {
+    const def = bankDefs[i] || {};
+    const div = document.createElement('div');
+    div.className = 'enc-key';
+    div.innerHTML = `<div class="enc-disc">↻</div>
+      <div class="enc-name">${encNames[i]}</div>
+      <div class="enc-action">${def.label || def.cc !== undefined ? 'CC '+def.cc : '—'}</div>
+      <div class="enc-mode">${def.cc !== undefined ? 'MIDI CC' : (def.t === 'hid' ? 'HID Key' : 'Custom')}</div>`;
+    div.onclick = () => openKeyPicker('enc', i, 'enc_turn');
+    grid.appendChild(div);
+  }
+}
+
+function renderPresetTabs() {
+  const container = document.getElementById('preset-tabs');
+  container.innerHTML = '';
+  config.presets.forEach((p, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'preset-tab' + (i===activePreset?' active':'');
+    tab.textContent = p.name;
+    tab.onclick = () => { activePreset=i; renderPresetTabs(); renderAll(); };
+    container.appendChild(tab);
+  });
+}
+
+// ─── Action helpers ──────────────────────────────────────
+function getTypeClass(a) {
+  if (!a) return '';
+  if (a.t==='hid') return 'type-hid';
+  if (a.t==='midi') return 'type-midi';
+  if (a.t==='media') return 'type-media';
+  if (a.t==='daw') return 'type-daw';
+  return '';
+}
+function getLabel(a) {
+  if (!a) return '—';
+  return a.label || (a.cc!==undefined?'CC'+a.cc:'?');
+}
+function getTypeTag(a) {
+  if (!a) return '';
+  if (a.t==='hid') return 'HID';
+  if (a.t==='midi') return a.sub==='note'?'NOTE':a.sub==='cc'?'CC':'MIDI';
+  if (a.t==='media') return 'MEDIA';
+  return '';
+}
+
+// ═══════════════════════════════════════════════════════
+//  PRESET MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function addPreset() {
+  if (config.presets.length >= 8) { showToast('Max 8 preset!','error'); return; }
+  config.presets.push({ name:'Preset '+(config.presets.length+1), encBank:0, matBank:0, padLBank:0, padRBank:0, usbMode:0, midiCh:1 });
+  activePreset = config.presets.length-1;
+  markModified();
+  renderPresetTabs(); renderAll();
+}
+function deletePreset() {
+  if (config.presets.length <= 1) { showToast('Minimal 1 preset!','error'); return; }
+  if (!confirm(`Hapus preset "${config.presets[activePreset].name}"?`)) return;
+  config.presets.splice(activePreset,1);
+  activePreset = Math.min(activePreset, config.presets.length-1);
+  markModified();
+  renderPresetTabs(); renderAll();
+}
+function onBankChange(section) {
+  const sel = {padL:'padl-bank', mat:'mat-bank', padR:'padr-bank'}[section];
+  const val = parseInt(document.getElementById(sel).value);
+  config.presets[activePreset][section+'Bank'] = val;
+  renderKeyGrid({padL:'padl-grid',mat:'mat-grid',padR:'padr-grid'}[section], section, val);
+  markModified();
+}
+function onEncBankChange() {
+  const val = parseInt(document.getElementById('enc-bank').value);
+  config.presets[activePreset].encBank = val;
+  renderEncoders(val);
+  markModified();
+}
+
+// ═══════════════════════════════════════════════════════
+//  KEY PICKER MODAL
+// ═══════════════════════════════════════════════════════
+function openKeyPicker(section, index, type) {
+  editCtx = { section, index, type };
+  const sectionLabel = {padL:'Pad Kiri',mat:'Matrix',padR:'Pad Kanan',enc:'Encoder'}[section] || section;
+  document.getElementById('modal-title').textContent = `Assign — ${sectionLabel} #${index+1}`;
+  document.getElementById('modal-subtitle').textContent =
+    type==='enc_turn' ? 'Action saat encoder diputar' :
+    type==='enc_click'? 'Action saat encoder diklik' : 'Action saat tombol ditekan';
+  pendingAction = null;
+  switchTab('basic', document.querySelector('.modal-tab'));
+  document.getElementById('key-modal').classList.add('open');
+}
+function closeModal() { document.getElementById('key-modal').classList.remove('open'); }
+function clearKey() {
+  pendingAction = null;
+  showToast('Key cleared','info');
+  closeModal();
+  applyAction(null);
+}
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderModalBody(tab);
+}
+
+function renderModalBody(tab) {
+  const body = document.getElementById('modal-body');
+  if (tab==='basic') {
+    const keys = [
+      ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
+      ['1','2','3','4','5','6','7','8','9','0'],
+      ['Space','Enter','Backspace','Tab','Escape','Delete','Insert'],
+      ['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'],
+      ['↑','↓','←','→','Home','End','PageUp','PageDown'],
+      ['Ctrl','Shift','Alt','Win/GUI']
+    ].flat();
+    body.innerHTML = '<input class="search-box" placeholder="Search keys..." oninput="filterKeys(this.value)"><div class="key-picker-grid" id="basic-grid"></div>';
+    const grid = document.getElementById('basic-grid');
+    keys.forEach(k => {
+      const btn = document.createElement('button');
+      btn.className = 'picker-key';
+      btn.textContent = k;
+      btn.dataset.key = k;
+      btn.onclick = () => { selectPickerKey(btn); pendingAction = {t:'hid',key:k,label:k}; };
+      grid.appendChild(btn);
+    });
+  } else if (tab==='combos') {
+    const combos = [
+      ['Ctrl+C','Copy'],['Ctrl+V','Paste'],['Ctrl+X','Cut'],['Ctrl+Z','Undo'],
+      ['Ctrl+Shift+Z','Redo'],['Ctrl+A','Select All'],['Ctrl+S','Save'],['Ctrl+F','Find'],
+      ['Ctrl+N','New'],['Ctrl+W','Close Tab'],['Ctrl+T','New Tab'],['Ctrl+P','Print'],
+      ['Ctrl+B','Bold'],['Ctrl+I','Italic'],['Ctrl+U','Underline'],['Alt+F4','Close Window'],
+      ['Ctrl+Shift+T','Reopen Tab'],['Ctrl+Tab','Next Tab'],['Win+D','Desktop'],['Win+L','Lock'],
+      ['Ctrl+Shift+Esc','Task Manager'],['Alt+Tab','Switch Window']
+    ];
+    body.innerHTML = '<div class="key-picker-grid">' + combos.map(([combo,label]) =>
+      `<button class="picker-key" onclick="selectPickerKey(this); pendingAction={t:'hid',combo:'${combo}',label:'${label}'}">
+        <div style="font-size:9px;color:var(--text-muted)">${combo}</div>
+        <div>${label}</div>
+      </button>`).join('') + '</div>';
+  } else if (tab==='media') {
+    const media = [
+      [0xCD,'Play/Pause'],[0xB5,'Next'],[0xB6,'Prev'],[0xB7,'Stop'],
+      [0xE9,'Vol+'],[0xEA,'Vol-'],[0xE2,'Mute'],[0xE0,'Bright+'],[0xE1,'Bright-']
+    ];
+    body.innerHTML = '<div class="key-picker-grid">' + media.map(([code,label]) =>
+      `<button class="picker-key" onclick="selectPickerKey(this); pendingAction={t:'media',code:${code},label:'${label}'}">
+        <div style="font-size:16px">${{0xCD:'⏯',0xB5:'⏭',0xB6:'⏮',0xB7:'⏹',0xE9:'🔊',0xEA:'🔉',0xE2:'🔇',0xE0:'🔆',0xE1:'🔅'}[code]||'?'}</div>
+        <div>${label}</div>
+      </button>`).join('') + '</div>';
+  } else if (tab==='midi_note') {
+    body.innerHTML = `<div class="midi-note-picker">
+      <div class="midi-row">
+        <label>Note:</label>
+        <input type="number" class="midi-input" id="midi-note-num" min="0" max="127" value="60" oninput="updateNoteLabel()">
+        <span id="note-name-disp" style="color:var(--key-midi-text);font-size:13px;font-weight:600;">C4</span>
+        <label style="margin-left:12px">Velocity:</label>
+        <input type="number" class="midi-input" id="midi-note-vel" min="1" max="127" value="100">
+      </div>
+      <div style="overflow-x:auto;padding:8px 0">
+        <div class="piano-row" id="piano-row"></div>
+      </div>
+      <button class="btn btn-success" onclick="pendingAction={t:'midi',sub:'note',note:parseInt(document.getElementById('midi-note-num').value),vel:parseInt(document.getElementById('midi-note-vel').value)||100,label:document.getElementById('note-name-disp').textContent}; showToast('Note set: '+pendingAction.label,'info')">Set MIDI Note</button>
+    </div>`;
+    renderPiano();
+  } else if (tab==='midi_cc') {
+    const ccs = [
+      [1,'Mod Wheel'],[7,'Volume'],[8,'Balance'],[10,'Pan'],[11,'Expression'],
+      [64,'Sustain'],[65,'Portamento'],[66,'Sostenuto'],[67,'Soft Pedal'],
+      [71,'Resonance'],[72,'Release'],[73,'Attack'],[74,'Filter Cutoff'],
+      [91,'Reverb'],[93,'Chorus'],[94,'Delay'],[120,'All Sounds Off'],[121,'Reset All'],[123,'All Notes Off']
+    ];
+    body.innerHTML = `<div class="midi-row" style="margin-bottom:12px">
+      <label>CC #:</label><input type="number" class="midi-input" id="cc-num" min="0" max="127" value="7">
+      <label style="margin-left:12px">Value:</label><input type="number" class="midi-input" id="cc-val" min="0" max="127" value="127">
+      <button class="btn btn-success btn-sm" onclick="pendingAction={t:'midi',sub:'cc',cc:parseInt(document.getElementById('cc-num').value),val:parseInt(document.getElementById('cc-val').value),label:'CC'+document.getElementById('cc-num').value};showToast('CC set','info')">Set Custom CC</button>
+    </div>
+    <div class="cc-grid">` + ccs.map(([cc,name]) =>
+      `<div class="cc-item" onclick="selectCC(this,${cc},'${name}')">
+        <div class="cc-num">CC ${cc}</div>
+        <div class="cc-name">${name}</div>
+      </div>`).join('') + '</div>';
+  } else if (tab==='daw') {
+    const daw = [
+      ['Play','Space'],['Stop','F8'],['Record','F9'],['Loop','Ctrl+L'],
+      ['Undo','Ctrl+Z'],['Redo','Ctrl+Shift+Z'],['Save','Ctrl+S'],['Metronome','C'],
+      ['Solo','S'],['Mute','M'],['Arm Track','Q'],['Quantize','Ctrl+U'],
+      ['New Marker','Ctrl+B'],['Tempo Tap','F6'],['Bounce','Ctrl+Shift+E'],['Export','Ctrl+Shift+R']
+    ];
+    body.innerHTML = '<div class="key-picker-grid">' + daw.map(([label,combo]) =>
+      `<button class="picker-key type-daw" onclick="selectPickerKey(this); pendingAction={t:'daw',combo:'${combo}',label:'${label}'}">
+        ${label}
+      </button>`).join('') + '</div>';
+  } else if (tab==='custom') {
+    body.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">
+      <div class="midi-row">
+        <label>Label:</label>
+        <input type="text" class="midi-input" id="cust-label" placeholder="My Action" style="width:140px">
+      </div>
+      <div class="midi-row">
+        <label>Type:</label>
+        <select class="bank-select" id="cust-type" style="width:120px" onchange="updateCustomFields()">
+          <option value="hid_key">HID Key</option>
+          <option value="hid_combo">HID Combo</option>
+          <option value="midi_note">MIDI Note</option>
+          <option value="midi_cc">MIDI CC</option>
+          <option value="media">Media Key</option>
+        </select>
+      </div>
+      <div id="custom-fields"></div>
+      <button class="btn btn-success" onclick="buildCustomAction()">Build Custom Action</button>
+    </div>`;
+    updateCustomFields();
+  }
+}
+
+function filterKeys(q) {
+  document.querySelectorAll('#basic-grid .picker-key').forEach(btn => {
+    btn.style.display = btn.dataset.key.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+function selectPickerKey(el) { document.querySelectorAll('.picker-key').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); }
+function selectCC(el, cc, name) {
+  document.querySelectorAll('.cc-item').forEach(b=>b.classList.remove('selected')); el.classList.add('selected');
+  document.getElementById('cc-num').value = cc;
+  pendingAction = {t:'midi',sub:'cc',cc,val:parseInt(document.getElementById('cc-val').value)||127,label:name};
+}
+function updateNoteLabel() {
+  const n = parseInt(document.getElementById('midi-note-num').value)||60;
+  document.getElementById('note-name-disp').textContent = midiNoteName(n);
+}
+function renderPiano() {
+  const row = document.getElementById('piano-row');
+  if (!row) return;
+  const notePattern = [0,1,0,1,0,0,1,0,1,0,1,0]; // 0=white,1=black
+  let html = '';
+  for (let oct=3;oct<=5;oct++) for (let n=0;n<12;n++) {
+    const note = oct*12+n; if(note>127)break;
+    const isBlack = notePattern[n]===1;
+    html += `<div class="piano-key${isBlack?' black':''}" onclick="document.getElementById('midi-note-num').value=${note};updateNoteLabel()" title="${midiNoteName(note)}">
+      ${!isBlack&&n===0?`<span class="piano-note-label">C${oct}</span>`:''}</div>`;
+  }
+  row.innerHTML = html;
+}
+function updateCustomFields() {
+  const t = document.getElementById('cust-type').value;
+  const f = document.getElementById('custom-fields');
+  const inp = (id,placeholder,type='text',min='',max='') =>
+    `<input type="${type}" class="midi-input" id="${id}" placeholder="${placeholder}" ${min?`min="${min}"`:''} ${max?`max="${max}"`:''}>`;
+  if (t==='hid_key') f.innerHTML = `<div class="midi-row"><label>Key:</label>${inp('c-key','e.g. F13')}</div>`;
+  else if (t==='hid_combo') f.innerHTML = `<div class="midi-row"><label>Combo:</label>${inp('c-combo','e.g. Ctrl+Shift+F5')}</div>`;
+  else if (t==='midi_note') f.innerHTML = `<div class="midi-row"><label>Note:</label>${inp('c-note','0-127','number','0','127')} <label>Vel:</label>${inp('c-vel','100','number','1','127')}</div>`;
+  else if (t==='midi_cc') f.innerHTML = `<div class="midi-row"><label>CC#:</label>${inp('c-cc','0-127','number','0','127')} <label>Val:</label>${inp('c-ccval','127','number','0','127')}</div>`;
+  else if (t==='media') f.innerHTML = `<div class="midi-row"><label>Code (hex):</label>${inp('c-mcode','0xCD')}</div>`;
+}
+function buildCustomAction() {
+  const t = document.getElementById('cust-type').value;
+  const label = document.getElementById('cust-label').value || 'Custom';
+  let action = {label};
+  if (t==='hid_key') action = {...action,t:'hid',key:document.getElementById('c-key').value};
+  else if (t==='hid_combo') action = {...action,t:'hid',combo:document.getElementById('c-combo').value};
+  else if (t==='midi_note') action = {...action,t:'midi',sub:'note',note:parseInt(document.getElementById('c-note').value)||60,vel:parseInt(document.getElementById('c-vel').value)||100};
+  else if (t==='midi_cc') action = {...action,t:'midi',sub:'cc',cc:parseInt(document.getElementById('c-cc').value)||0,val:parseInt(document.getElementById('c-ccval').value)||127};
+  else if (t==='media') action = {...action,t:'media',code:parseInt(document.getElementById('c-mcode').value)||0xCD};
+  pendingAction = action;
+  showToast('Custom action built: '+label,'info');
+}
+function confirmKey() {
+  if (!pendingAction) { showToast('Pilih aksi terlebih dahulu!','error'); return; }
+  applyAction(pendingAction);
+  closeModal();
+  showToast('Key assigned: '+pendingAction.label,'success');
+}
+function applyAction(action) {
+  const { section, index, type } = editCtx;
+  if (!config.customBanks[section]) return;
+  const bankIdx = section==='enc' ? config.presets[activePreset].encBank :
+    {padL:config.presets[activePreset].padLBank, mat:config.presets[activePreset].matBank, padR:config.presets[activePreset].padRBank}[section];
+  if (type==='key') {
+    if (!config.customBanks[section][bankIdx]) config.customBanks[section][bankIdx] = {name:'Custom',keys:Array(16).fill(null)};
+    config.customBanks[section][bankIdx].keys[index] = action;
+    renderKeyGrid({padL:'padl-grid',mat:'mat-grid',padR:'padr-grid'}[section]||'', section, bankIdx);
+  }
+  markModified();
+}
+function editBank(section) { showToast('Bank editor: klik key untuk assign aksi','info'); }
+function editEncBank() { showToast('Enc bank: klik encoder untuk assign CC/aksi','info'); }
+
+// ═══════════════════════════════════════════════════════
+//  WEBSERIAL
+// ═══════════════════════════════════════════════════════
+async function toggleConnect() {
+  if (port) { await disconnectSerial(); } else { await connectSerial(); }
+}
+async function connectSerial() {
+  if (!hasSerial) { showToast('WebSerial tidak support di browser ini!','error'); return; }
+  try {
+    port = await navigator.serial.requestPort({ filters: [] });
+    await port.open({ baudRate: 115200 });
+    writer = port.writable.getWriter();
+    readSerial();
+    updateConnStatus(true);
+    setStatus('Connected','green');
+    document.getElementById('save-btn').disabled = false;
+    showToast('MacroPad terhubung!','success');
+    setTimeout(()=>pingDevice(),500);
+  } catch(e) {
+    if (e.name!=='NotFoundError') showToast('Gagal connect: '+e.message,'error');
+    port = null;
+  }
+}
+async function disconnectSerial() {
+  try {
+    if (reader) { await reader.cancel(); reader = null; }
+    if (writer) { writer.releaseLock(); writer = null; }
+    if (port)   { await port.close(); port = null; }
+  } catch(e) {}
+  updateConnStatus(false);
+  setStatus('Disconnected','red');
+  document.getElementById('save-btn').disabled = true;
+  showToast('Disconnected','info');
+}
+async function readSerial() {
+  reader = port.readable.getReader();
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      serialBuffer += new TextDecoder().decode(value);
+      processSerialBuffer();
+    }
+  } catch(e) { if (e.name!=='AbortError') setStatus('Serial error: '+e.message,'red'); }
+  finally { reader.releaseLock(); }
+}
+function processSerialBuffer() {
+  let nl;
+  while ((nl = serialBuffer.indexOf('\n')) !== -1) {
+    const line = serialBuffer.slice(0, nl).trim();
+    serialBuffer = serialBuffer.slice(nl+1);
+    handleSerialLine(line);
+  }
+}
+function handleSerialLine(line) {
+  if (!line.startsWith('WCFG:')) return;
+  const data = line.slice(5);
+  if (data.startsWith('PONG:')) {
+    showToast('Device: '+data.slice(5),'success');
+    setStatus('Connected — '+data.slice(5),'green');
+  } else if (data.startsWith('CONFIG:')) {
+    try {
+      const remote = JSON.parse(data.slice(7));
+      mergeRemoteConfig(remote);
+      showToast('Config loaded from device','success');
+    } catch(e) { showToast('Config parse error','error'); }
+  } else if (data==='OK' || data==='SAVED') {
+    showToast(data==='SAVED'?'Saved to SD card!':'Config applied','success');
+    if (data==='SAVED') { isModified=false; updateModifiedStatus(); }
+  }
+}
+async function sendSerial(cmd) {
+  if (!writer) { showToast('Tidak terhubung!','error'); return; }
+  const data = new TextEncoder().encode(cmd+'\n');
+  await writer.write(data);
+}
+async function pingDevice() { await sendSerial('WCFG:PING'); }
+async function getDeviceConfig() { await sendSerial('WCFG:GET'); }
+async function saveToDevice() {
+  const payload = buildConfigPayload();
+  await sendSerial('WCFG:SET:'+JSON.stringify(payload));
+  setTimeout(()=>sendSerial('WCFG:SAVE'),500);
+}
+function buildConfigPayload() {
+  return {
+    presets: config.presets,
+    customBanks: config.customBanks
+  };
+}
+function mergeRemoteConfig(remote) {
+  if (remote.presets) config.presets = remote.presets;
+  if (remote.customBanks) config.customBanks = remote.customBanks;
+  renderPresetTabs(); renderAll();
+}
+
+// ═══════════════════════════════════════════════════════
+//  IMPORT / EXPORT
+// ═══════════════════════════════════════════════════════
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(buildConfigPayload(), null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'macropad_config.json';
+  a.click();
+  showToast('Config exported','success');
+}
+function importJSON() { document.getElementById('import-input').click(); }
+function handleImport(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      mergeRemoteConfig(data);
+      markModified();
+      showToast('Config imported dari '+file.name,'success');
+    } catch(err) { showToast('File JSON tidak valid','error'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ─── Firmware Patch ────────────────────────────────────
+function copyFirmwarePatch() {
+  const patch = `// ─── Tambahkan di handleSerialCommands() ───────────────
+// Cari: } else if (cmd == '...') {
+// Tambahkan SEBELUM default case:
+
+// WebConfig Protocol
+if (line.startsWith("WCFG:")) {
+  String wcmd = line.substring(5);
+  if (wcmd == "PING") {
+    Serial.println("WCFG:PONG:MacroPad_v1.0");
+  } else if (wcmd == "GET") {
+    // Build and send config JSON
+    String cfg = "{\\\"presets\\\":[";
+    for (int i=0;i<totalPresets;i++) {
+      if(i>0)cfg+=",";
+      cfg+="{\\\"name\\\":\\\""+String(presets[i].name)+"\\\",";
+      cfg+="\\\"encBank\\\":"+String(presets[i].encBank)+",";
+      cfg+="\\\"matBank\\\":"+String(presets[i].matBank)+",";
+      cfg+="\\\"padLBank\\\":"+String(presets[i].padLBank)+",";
+      cfg+="\\\"padRBank\\\":"+String(presets[i].padRBank)+"}";
+    }
+    cfg+="]}";
+    Serial.println("WCFG:CONFIG:"+cfg);
+  } else if (wcmd.startsWith("SET:")) {
+    String json = wcmd.substring(4);
+    // Parse dan save ke SD card
+    // (pakai ArduinoJson yang sudah ada)
+    Serial.println("WCFG:OK");
+  } else if (wcmd == "SAVE") {
+    saveAllPresets();
+    Serial.println("WCFG:SAVED");
+  }
+  return;
+}`;
+  navigator.clipboard.writeText(patch).then(()=>showToast('Firmware patch copied!','success')).catch(()=>showToast('Copy gagal — lihat console','error'));
+}
+
+// ═══════════════════════════════════════════════════════
+//  UI HELPERS
+// ═══════════════════════════════════════════════════════
+function updateConnStatus(connected) {
+  const badge = document.getElementById('conn-badge');
+  const btn   = document.getElementById('connect-btn');
+  if (connected) {
+    badge.className = 'badge badge-connected';
+    badge.textContent = '● Connected';
+    btn.textContent = 'Disconnect';
+    btn.className = 'btn btn-danger';
+  } else {
+    badge.className = 'badge badge-disconnected';
+    badge.textContent = '● Disconnected';
+    btn.textContent = 'Connect USB';
+    btn.className = 'btn btn-primary';
+  }
+}
+function markModified() {
+  isModified = true;
+  updateModifiedStatus();
+}
+function updateModifiedStatus() {
+  const el = document.getElementById('status-modified');
+  el.style.display = isModified ? '' : 'none';
+}
+function setStatus(msg, color) {
+  document.getElementById('status-text').textContent = msg;
+  const dot = document.getElementById('status-dot');
+  dot.style.background = color==='green'?'var(--green)':color==='orange'?'var(--orange)':'var(--red)';
+}
+function showToast(msg, type='info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast '+type;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ toast.classList.add('show'); }); });
+  setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=>toast.remove(),300); }, 2500);
+}
+
+// ─── Keyboard close modal ──────────────────────────────
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+document.getElementById('key-modal').addEventListener('click', e => { if(e.target.id==='key-modal') closeModal(); });
+
+// ─── Check WebSerial ────────────────────────────────────
+if (!hasSerial) {
+  const badge = document.getElementById('conn-badge');
+  badge.className = 'badge badge-nowebserial';
+  badge.textContent = '⚠ No WebSerial';
+  document.getElementById('connect-btn').disabled = true;
+  setStatus('WebSerial not available — use Chrome/Edge','orange');
+}
+
+// ─── INIT ─────────────────────────────────────────────
+init();
+setStatus('Ready — Connect MacroPad via USB','orange');
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js')
+        .then(reg => console.log('Service Worker terdaftar!', reg))
+        .catch(err => console.log('Service Worker gagal:', err));
+    });
+  }
+</script>
+</body>
+</html>
+HTMLEOF
+echo "OK"
+wc -l /home/claude/MacroPad_WebConfig/index.html
