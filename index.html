@@ -13,7 +13,7 @@
   --accent:#7c6cff;--accent2:#a097ff;--accent3:#4a3eb8;
   --green:#3ddc84;--red:#f06b6b;--amber:#f5a623;--cyan:#29d9c2;--purple:#c792ea;
   --key-bg:#1e2035;--key-b:#323660;--key-shd:#0d0e18;
-  --midi:#29d9c2;--media:#3ddc84;--macro:#a097ff;--td:#c792ea;--hid:#5c6090;--stream:#5865f2;
+  --midi:#29d9c2;--media:#3ddc84;--macro:#a097ff;--td:#c792ea;--hid:#5c6090;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
@@ -67,6 +67,19 @@ body{display:flex;flex-direction:column;height:100vh}
 /* ── TARGET FOCUS HIGHLIGHT ── */
 .target-focus { border: 2px solid var(--accent) !important; box-shadow: 0 0 10px rgba(124,108,255,0.4) !important; background: rgba(124,108,255,0.1) !important; }
 
+/* ── KEYMAP MAIN WRAPPER ── */
+#keymap-main { display: flex; flex: 1; overflow: hidden; width: 100%; }
+
+/* ── SIDEBAR ── */
+#key-sidebar { width: 280px; flex-shrink: 0; background: var(--bg2); border-left: 1px solid var(--border); display: flex; flex-direction: column; margin-right: -280px; transition: margin-right 0.25s cubic-bezier(0.4, 0, 0.2, 1); z-index: 10; box-shadow: -4px 0 15px rgba(0,0,0,0.1); }
+#key-sidebar.open { margin-right: 0; }
+.ks-header { padding: 15px; border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 700; color: var(--text); display: flex; justify-content: space-between; align-items: center; background: var(--bg3); }
+.ks-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; }
+.ks-footer { padding: 12px 15px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; background: var(--bg); }
+.ks-row { display: flex; flex-direction: column; gap: 5px; }
+.ks-row label { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.ks-info-box { background: var(--bg); border: 1px dashed var(--border2); padding: 12px; border-radius: 6px; font-size: 10px; color: var(--muted2); line-height: 1.6; }
+
 /* ── LAYOUT AREA ── */
 #layout-area{flex:1;overflow:auto;padding:16px;display:flex;align-items:flex-start;justify-content:center;background:var(--bg)}
 
@@ -105,7 +118,6 @@ body{display:flex;flex-direction:column;height:100vh}
 .bd-macro{background:var(--macro)}
 .bd-td{background:var(--purple)}
 .bd-hid{background:var(--hid)}
-.bd-stream{background:var(--stream)}
 
 /* ── PICKER (global bottom) ── */
 #picker{height:38vh;min-height:260px;flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;flex-direction:column;z-index:100}
@@ -118,11 +130,11 @@ body{display:flex;flex-direction:column;height:100vh}
 .pb{display:none}
 .pb.on{display:block}
 
-/* ── VIRTUAL KBD FLEXBOX REWRITE ── */
-.kbd-section{display:flex;gap:14px;justify-content:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px;}
-.kbd-half{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:1;max-width:700px}
-.kbd-row{display:flex;gap:3px;justify-content:stretch;width:100%}
-.pk{flex:1 1 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:34px;padding:0 2px;border:1px solid var(--border2);border-radius:4px;background:var(--bg3);color:var(--text);font-size:9px;font-weight:700;cursor:pointer;text-align:center;line-height:1.2;transition:.08s;user-select:none;flex-shrink:1;min-width:0;overflow:hidden}
+/* ── VIRTUAL KBD FLEXBOX REWRITE (RESPONSIVE FIX & CENTERED) ── */
+.kbd-section{display:flex;gap:14px;justify-content:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:10px;width:100%;}
+.kbd-half{display:flex;flex-direction:column;align-items:stretch;gap:3px;flex:0 0 auto;min-width:min-content;}
+.kbd-row{display:flex;gap:3px;justify-content:stretch;width:100%;}
+.pk{flex:1 1 0;min-width:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:34px;padding:0 2px;border:1px solid var(--border2);border-radius:4px;background:var(--bg3);color:var(--text);font-size:9px;font-weight:700;cursor:pointer;text-align:center;line-height:1.2;transition:.08s;user-select:none;overflow:hidden}
 .pk:hover{border-color:var(--accent);background:var(--bg4)}
 .pk:active{transform:scale(.94)}
 .pk .ps{font-size:7px;color:var(--muted);margin-top:1px}
@@ -142,6 +154,7 @@ body{display:flex;flex-direction:column;height:100vh}
 .pk-mac{border-color:rgba(160,151,255,.3)}.pk-mac:hover{border-color:var(--accent2)}
 .pk-td{border-color:rgba(199,146,234,.3)}.pk-td:hover{border-color:var(--purple)}
 .pk-media{border-color:rgba(61,220,132,.3)}.pk-media:hover{border-color:var(--green)}
+.pk-red{border-color:rgba(240,107,107,.3)}.pk-red:hover{border-color:var(--red);background:rgba(240,107,107,.1)}
 
 .pksec{font-size:8.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:6px 0 3px;display:block}
 .pkgrid{display:flex;flex-wrap:wrap;gap:3px}
@@ -149,7 +162,7 @@ body{display:flex;flex-direction:column;height:100vh}
 /* ── MIDI PICKER GROUPS & CC PANELS ── */
 .midi-group-box { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px; min-width:280px; flex:1 }
 .midi-group-title { font-size:10px; font-weight:700; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; display:flex; justify-content:space-between; align-items:center }
-.midi-group-container { display:flex; flex-wrap:wrap; gap:10px; padding-bottom:5px }
+.midi-group-container { display:flex; flex-wrap:wrap; gap:10px; padding-bottom:5px; align-items:stretch; }
 
 /* Professional CC Panel */
 .cc-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; transition:.15s; }
@@ -239,19 +252,6 @@ body{display:flex;flex-direction:column;height:100vh}
 .mbtn{flex:1;padding:5px;border:1px solid var(--border2);border-radius:4px;background:var(--bg3);color:var(--muted2);font-size:9px;font-weight:700;cursor:pointer;transition:.1s}
 .mbtn.on{background:rgba(124,108,255,.15);border-color:var(--accent);color:var(--accent2)}
 
-/* ── STREAM EDITOR ── */
-.stream-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-.stream-app{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
-.stream-app-h{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border-bottom:1px solid var(--border)}
-.stream-app-ico{width:24px;height:24px;border-radius:4px;display:grid;place-items:center;font-size:12px;flex-shrink:0}
-.stream-app-b{padding:8px 10px;display:flex;flex-direction:column;gap:4px}
-.stream-action{display:flex;align-items:center;gap:6px;padding:5px 7px;background:var(--bg);border:1px solid var(--border);border-radius:5px;cursor:pointer;transition:.1s}
-.stream-action:hover{border-color:var(--border2);background:var(--bg3)}
-.sa-key{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted2);width:32px;flex-shrink:0}
-.sa-name{font-size:10px;font-weight:600;flex:1}
-.sa-edit{font-size:9px;color:var(--muted);cursor:pointer}
-.sa-edit:hover{color:var(--accent2)}
-
 /* ── MIDI EDITOR ── */
 .midi-grid{display:grid;grid-template-columns:1fr;gap:10px}
 .midi-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:65vh;overflow-y:auto}
@@ -303,7 +303,6 @@ body{display:flex;flex-direction:column;height:100vh}
   <button class="ntab" id="ntab-altrepeat">Alt Repeat</button>
   <button class="ntab" id="ntab-midinote">MIDI Note</button>
   <button class="ntab" id="ntab-midicc">MIDI CC</button>
-  <button class="ntab" id="ntab-stream">Stream</button>
   <button class="ntab" id="ntab-led">LED</button>
   <div class="sep"></div>
   <div class="tbr">
@@ -332,70 +331,106 @@ body{display:flex;flex-direction:column;height:100vh}
         <button class="btn btn-red" id="btn-del-preset" style="padding:2px 8px;font-size:9px">✕ Del</button>
         <div id="status-msg">Klik tombol → pilih aksi di bawah</div>
       </div>
-      <div id="layout-area">
-        <div class="board">
-          <div class="enc-row">
-            <div class="enc-group"><span class="enc-lbl">Encoder 1</span>
-              <div class="key enc-k" id="k-enc-0-ccw"></div>
-              <div class="key enc-k" id="k-enc-0-clk"></div>
-              <div class="key enc-k" id="k-enc-0-cw"></div>
-            </div>
-            <div class="enc-group"><span class="enc-lbl">Encoder 2</span>
-              <div class="key enc-k" id="k-enc-1-ccw"></div>
-              <div class="key enc-k" id="k-enc-1-clk"></div>
-              <div class="key enc-k" id="k-enc-1-cw"></div>
-            </div>
-            <div class="oled-col">
-              <div class="oled"><span id="oled-name">MacroPad</span><span class="oled-sub" id="oled-sub">Preset 1</span></div>
-              <div class="bank-row" style="width:148px">
-                <select class="bsel" id="sel-enc"></select>
-                <div class="bico" id="bico-enc-rename" title="Rename">✎</div>
-                <div class="bico rd" id="bico-enc-del" title="Hapus">⊗</div>
+      
+      <!-- WRAPPER UNTUK LAYOUT DAN SIDEBAR -->
+      <div id="keymap-main">
+          
+          <div id="layout-area">
+            <div class="board">
+              <div class="enc-row">
+                <div class="enc-group"><span class="enc-lbl">Encoder 1</span>
+                  <div class="key enc-k" id="k-enc-0-ccw"></div>
+                  <div class="key enc-k" id="k-enc-0-clk"></div>
+                  <div class="key enc-k" id="k-enc-0-cw"></div>
+                </div>
+                <div class="enc-group"><span class="enc-lbl">Encoder 2</span>
+                  <div class="key enc-k" id="k-enc-1-ccw"></div>
+                  <div class="key enc-k" id="k-enc-1-clk"></div>
+                  <div class="key enc-k" id="k-enc-1-cw"></div>
+                </div>
+                <div class="oled-col">
+                  <div class="oled"><span id="oled-name">MacroPad</span><span class="oled-sub" id="oled-sub">Preset 1</span></div>
+                  <div class="bank-row" style="width:148px">
+                    <select class="bsel" id="sel-enc"></select>
+                    <div class="bico" id="bico-enc-rename" title="Rename">✎</div>
+                    <div class="bico rd" id="bico-enc-del" title="Hapus">⊗</div>
+                  </div>
+                  <button class="btn btn-green" id="btn-add-enc-bank" style="width:148px;justify-content:center;font-size:9px;padding:2px">+ Bank Baru</button>
+                </div>
+                <div class="enc-group"><span class="enc-lbl">Encoder 3</span>
+                  <div class="key enc-k" id="k-enc-2-ccw"></div>
+                  <div class="key enc-k" id="k-enc-2-clk"></div>
+                  <div class="key enc-k" id="k-enc-2-cw"></div>
+                </div>
+                <div class="enc-group"><span class="enc-lbl">Encoder 4</span>
+                  <div class="key enc-k" id="k-enc-3-ccw"></div>
+                  <div class="key enc-k" id="k-enc-3-clk"></div>
+                  <div class="key enc-k" id="k-enc-3-cw"></div>
+                </div>
               </div>
-              <button class="btn btn-green" id="btn-add-enc-bank" style="width:148px;justify-content:center;font-size:9px;padding:2px">+ Bank Baru</button>
-            </div>
-            <div class="enc-group"><span class="enc-lbl">Encoder 3</span>
-              <div class="key enc-k" id="k-enc-2-ccw"></div>
-              <div class="key enc-k" id="k-enc-2-clk"></div>
-              <div class="key enc-k" id="k-enc-2-cw"></div>
-            </div>
-            <div class="enc-group"><span class="enc-lbl">Encoder 4</span>
-              <div class="key enc-k" id="k-enc-3-ccw"></div>
-              <div class="key enc-k" id="k-enc-3-clk"></div>
-              <div class="key enc-k" id="k-enc-3-cw"></div>
+              <div class="panels-row">
+                <div class="panel-col">
+                  <div class="bank-row">
+                    <select class="bsel" id="sel-padl"></select>
+                    <div class="bico" id="bico-padl-rename">✎</div>
+                    <div class="bico rd" id="bico-padl-del">⊗</div>
+                  </div>
+                  <button class="btn btn-green" id="btn-add-padl-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
+                  <div class="grid4" id="grid-padl"></div>
+                </div>
+                <div class="panel-col">
+                  <div class="bank-row">
+                    <select class="bsel" id="sel-mat"></select>
+                    <div class="bico" id="bico-mat-rename">✎</div>
+                    <div class="bico rd" id="bico-mat-del">⊗</div>
+                  </div>
+                  <button class="btn btn-green" id="btn-add-mat-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
+                  <div class="grid4" id="grid-mat"></div>
+                </div>
+                <div class="panel-col">
+                  <div class="bank-row">
+                    <select class="bsel" id="sel-padr"></select>
+                    <div class="bico" id="bico-padr-rename">✎</div>
+                    <div class="bico rd" id="bico-padr-del">⊗</div>
+                  </div>
+                  <button class="btn btn-green" id="btn-add-padr-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
+                  <div class="grid4" id="grid-padr"></div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="panels-row">
-            <div class="panel-col">
-              <div class="bank-row">
-                <select class="bsel" id="sel-padl"></select>
-                <div class="bico" id="bico-padl-rename">✎</div>
-                <div class="bico rd" id="bico-padl-del">⊗</div>
+          
+          <!-- SIDEBAR SETTINGS BARU (TIDAK OVERLAY PADA AREA KEYMAP) -->
+          <div id="key-sidebar">
+            <div class="ks-header">
+              <span>Key Settings</span>
+              <div style="text-align:right">
+                <div id="ks-title" style="color:var(--accent2);font-size:10px;"></div>
+                <div id="ks-bank" style="color:var(--muted);font-size:8px;font-weight:normal;"></div>
               </div>
-              <button class="btn btn-green" id="btn-add-padl-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
-              <div class="grid4" id="grid-padl"></div>
             </div>
-            <div class="panel-col">
-              <div class="bank-row">
-                <select class="bsel" id="sel-mat"></select>
-                <div class="bico" id="bico-mat-rename">✎</div>
-                <div class="bico rd" id="bico-mat-del">⊗</div>
+            <div class="ks-body">
+              <div class="ks-info-box" id="ks-info">Pilih aksi dari Picker di bawah.</div>
+              <div class="ks-row">
+                <label>Tipe Aksi</label>
+                <input class="cinp" id="ks-type" style="background:var(--bg3);color:var(--muted2)" readonly>
               </div>
-              <button class="btn btn-green" id="btn-add-mat-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
-              <div class="grid4" id="grid-mat"></div>
+              <div class="ks-row">
+                <label>Parameter Aksi</label>
+                <input class="cinp" id="ks-action" style="background:var(--bg3);color:var(--muted2)" readonly>
+              </div>
+              <div class="ks-row" style="margin-top:5px">
+                <label>Custom Label Layar</label>
+                <input class="cinp" id="ks-label" placeholder="Nama label...">
+              </div>
             </div>
-            <div class="panel-col">
-              <div class="bank-row">
-                <select class="bsel" id="sel-padr"></select>
-                <div class="bico" id="bico-padr-rename">✎</div>
-                <div class="bico rd" id="bico-padr-del">⊗</div>
-              </div>
-              <button class="btn btn-green" id="btn-add-padr-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
-              <div class="grid4" id="grid-padr"></div>
+            <div class="ks-footer">
+              <button class="btn" id="btn-ks-cancel">Cancel</button>
+              <button class="btn btn-accent" id="btn-ks-save">Save</button>
             </div>
           </div>
-        </div>
-      </div>
+          
+      </div> <!-- /keymap-main -->
     </div>
 
     <!-- ═══ MACROS ═══ -->
@@ -466,18 +501,6 @@ body{display:flex;flex-direction:column;height:100vh}
       </div></div>
     </div>
 
-    <!-- ═══ STREAM ═══ -->
-    <div class="ws" id="ws-stream">
-      <div class="adv-area"><div class="adv-inner">
-        <div class="adv-tip"><b>Stream Deck Actions</b> — Petakan F13–F24 ke aplikasi seperti OBS, Discord, Spotify. Tambah aplikasi custom dan atur nama aksi per hotkey. Klik nama aksi untuk rename.</div>
-        <div class="sec-toolbar">
-          <h3>Stream Apps</h3>
-          <button class="btn btn-green" id="btn-add-stream-app">+ Tambah App</button>
-        </div>
-        <div id="stream-container"></div>
-      </div></div>
-    </div>
-
     <!-- ═══ LED ═══ -->
     <div class="ws" id="ws-led">
       <div class="adv-area"><div class="adv-inner">
@@ -492,7 +515,6 @@ body{display:flex;flex-direction:column;height:100vh}
     <div id="ptabs">
       <div class="ptab on" id="ptab-basic">Keys</div>
       <div class="ptab" id="ptab-media">Media</div>
-      <div class="ptab" id="ptab-stream">Stream</div>
       <div class="ptab" id="ptab-midinote">MIDI Note</div>
       <div class="ptab" id="ptab-midicc">MIDI CC</div>
       <div class="ptab" id="ptab-macro">Macros</div>
@@ -508,9 +530,8 @@ body{display:flex;flex-direction:column;height:100vh}
     <div id="pbody">
       <div class="pb on" id="pb-basic"><div class="kbd-section" id="pk-basic"></div></div>
       <div class="pb" id="pb-media"><div class="pkgrid" id="pk-media"></div></div>
-      <div class="pb" id="pb-stream"><div class="pkgrid" id="pk-stream"></div></div>
       <div class="pb" id="pb-midinote"><div id="pk-midinote"></div></div>
-      <div class="pb" id="pb-midicc"><div class="pkgrid" id="pk-midicc"></div></div>
+      <div class="pb" id="pb-midicc"><div id="pk-midicc"></div></div>
       <div class="pb" id="pb-macro"><div class="pkgrid" id="pk-macro"></div></div>
       <div class="pb" id="pb-td"><div class="pkgrid" id="pk-td"></div></div>
       <div class="pb" id="pb-combo"><div class="pkgrid" id="pk-combo"></div></div>
@@ -572,7 +593,7 @@ var ENC=[
 var presets=[{name:'Preset 1',padL:0,mat:2,padR:4,enc:0},{name:'Preset 2',padL:5,mat:0,padR:4,enc:1},{name:'Preset 3',padL:0,mat:1,padR:3,enc:2},{name:'Preset 4',padL:1,mat:2,padR:4,enc:4},{name:'Preset 5',padL:2,mat:4,padR:5,enc:0},{name:'Preset 6',padL:3,mat:3,padR:3,enc:3}];
 var actP=0,selK=null,lastFocusedInput=null;
 
-// Target Fokus Dinamis Global (Untuk Combo, Tap-Dance, Macro Input)
+// Target Fokus Dinamis Global
 var activeTarget = null;
 
 // Dynamic lists
@@ -593,15 +614,8 @@ var MIDI_CFG={
 
 // Global state variables for MIDI Note Feature
 var virtualMidiVel=100;
-var velModeSelect='tap'; // Tap / Hold mode for assignment
+var velModeSelect='tap';
 var selectedMidiEditNote=null;
-
-// Stream apps
-var STREAM_APPS=[
-  {name:'OBS Studio',icon:'🎬',color:'#c94040',actions:[{key:'F13',name:'Start Recording'},{key:'F14',name:'Start Streaming'},{key:'F15',name:'Scene 1'},{key:'F16',name:'Scene 2'},{key:'F17',name:'Scene 3'},{key:'F18',name:'Mute Mic'}]},
-  {name:'Discord',icon:'🎮',color:'#5865f2',actions:[{key:'F19',name:'Toggle Mic'},{key:'F20',name:'Toggle Deaf'},{key:'F21',name:'Push to Talk'},{key:'F22',name:'Screen Share'}]},
-  {name:'Spotify',icon:'🎵',color:'#1db954',actions:[{key:'F23',name:'Play/Pause'},{key:'F24',name:'Next Track'}]}
-];
 
 // ══════════════════════════════════════════
 // FOCUS SYSTEM
@@ -622,7 +636,6 @@ document.addEventListener('focusin',function(e){
   if(e.target.tagName==='INPUT') lastFocusedInput=e.target;
 });
 
-// Clear focus when switching tabs
 document.querySelectorAll('.ntab').forEach(t => {
   t.addEventListener('click', clearFocusTarget);
 });
@@ -633,7 +646,8 @@ document.querySelectorAll('.ntab').forEach(t => {
 var histStack=[],histStep=-1,isRest=false;
 function saveH(){
   if(isRest)return;
-  var s=JSON.stringify({presets,MAT,ENC,MACROS,TAPDANCES,COMBOS,ALTREPEAT,LED,BN,MIDI_CFG,STREAM_APPS});
+  // Stream apps dihapus, pastikan tidak ada referensi di JSON
+  var s=JSON.stringify({presets,MAT,ENC,MACROS,TAPDANCES,COMBOS,ALTREPEAT,LED,BN,MIDI_CFG});
   if(histStep<histStack.length-1)histStack=histStack.slice(0,histStep+1);
   histStack.push(s);
   if(histStack.length>60)histStack.shift();else histStep++;
@@ -644,13 +658,16 @@ function doRedo(){if(histStep<histStack.length-1){histStep++;restH(histStack[his
 function restH(s){
   isRest=true;
   var d=JSON.parse(s);
-  presets=d.presets;MAT=d.MAT;ENC=d.ENC;MACROS=d.MACROS;
-  TAPDANCES=d.TAPDANCES;COMBOS=d.COMBOS;
+  if(d.presets)presets=d.presets;
+  if(d.MAT)MAT=d.MAT;
+  if(d.ENC)ENC=d.ENC;
+  if(d.MACROS)MACROS=d.MACROS;
+  if(d.TAPDANCES)TAPDANCES=d.TAPDANCES;
+  if(d.COMBOS)COMBOS=d.COMBOS;
   if(d.ALTREPEAT)ALTREPEAT=d.ALTREPEAT;
   if(d.LED)LED=d.LED;
   if(d.BN)BN=d.BN;
   if(d.MIDI_CFG)MIDI_CFG=d.MIDI_CFG;
-  if(d.STREAM_APPS)STREAM_APPS=d.STREAM_APPS;
   if(actP>=presets.length)actP=presets.length-1;
   rebuildAll();isRest=false;
 }
@@ -660,7 +677,7 @@ function updUndoUI(){
 }
 
 // ══════════════════════════════════════════
-// MODAL (Fallback Only)
+// MODAL
 // ══════════════════════════════════════════
 var _mRes=null;
 function showModal(title,desc,def,grabKeys){
@@ -707,7 +724,7 @@ function toast(msg,type){
 // TABS
 // ══════════════════════════════════════════
 function initNavTabs(){
-  ['keymap','macros','tapdance','combos','altrepeat','midinote','midicc','stream','led'].forEach(function(id){
+  ['keymap','macros','tapdance','combos','altrepeat','midinote','midicc','led'].forEach(function(id){
     document.getElementById('ntab-'+id).addEventListener('click',function(){
       document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('on');});
       document.querySelectorAll('.ws').forEach(function(w){w.classList.remove('on');});
@@ -719,11 +736,10 @@ function initNavTabs(){
       if(id==='altrepeat')renderAR();
       if(id==='midinote')renderMIDINote();
       if(id==='midicc')renderMIDICC();
-      if(id==='stream')renderStream();
       if(id==='led')renderLED();
     });
   });
-  ['basic','media','stream','midinote','midicc','macro','td','combo','altrep','ledcfg'].forEach(function(id){
+  ['basic','media','midinote','midicc','macro','td','combo','altrep','ledcfg'].forEach(function(id){
     document.getElementById('ptab-'+id).addEventListener('click',function(){
       document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('on');});
       document.querySelectorAll('.pb').forEach(function(b){b.classList.remove('on');});
@@ -774,11 +790,81 @@ function cloneIfDefault(sec){
 }
 
 // ══════════════════════════════════════════
+// SIDEBAR (KEY SETTINGS) LOGIC
+// ══════════════════════════════════════════
+var currentSidebarObj = null;
+
+function openKeySidebar(loc, bName) {
+  var sb = document.getElementById('key-sidebar');
+  sb.classList.add('open');
+  document.getElementById('ks-title').innerText = loc;
+  document.getElementById('ks-bank').innerText = bName;
+
+  var p = presets[actP];
+  var actObj = null;
+  if(selK.type === 'enc') {
+    var val = ENC[p.enc][selK.sec][selK.part];
+    actObj = (val && val !== '—') ? { l: val, t: 'Encoder Action' } : null;
+  } else {
+    actObj = MAT[p[selK.sec]][selK.idx];
+  }
+
+  currentSidebarObj = actObj ? JSON.parse(JSON.stringify(actObj)) : null;
+
+  if(!currentSidebarObj || currentSidebarObj.l === '—') {
+    document.getElementById('ks-type').value = 'None / Unassigned';
+    document.getElementById('ks-action').value = '-';
+    document.getElementById('ks-label').value = '';
+    document.getElementById('ks-info').innerHTML = 'Tombol ini belum di-assign. Silakan pilih aksi dari Picker di bawah.';
+  } else {
+    document.getElementById('ks-type').value = (currentSidebarObj.t || 'Custom').toUpperCase();
+    var actionDetail = currentSidebarObj.code || currentSidebarObj.n || currentSidebarObj.l || '-';
+    if(currentSidebarObj.t === 'midi' && currentSidebarObj.s === 'note') actionDetail = 'Note ' + currentSidebarObj.n;
+    else if(currentSidebarObj.t === 'midi' && currentSidebarObj.s === 'cc') actionDetail = 'CC ' + currentSidebarObj.n;
+    
+    document.getElementById('ks-action').value = actionDetail;
+    document.getElementById('ks-label').value = currentSidebarObj.l || '';
+
+    var infoHtml = '<b>Type:</b> <span style="color:var(--cyan)">' + (currentSidebarObj.t||'-').toUpperCase() + '</span><br><b>Action:</b> ' + actionDetail;
+    if(currentSidebarObj.v !== undefined) infoHtml += '<br><b>Velocity/Value:</b> ' + currentSidebarObj.v;
+    if(currentSidebarObj.mode !== undefined) infoHtml += '<br><b>Mode:</b> ' + currentSidebarObj.mode;
+    document.getElementById('ks-info').innerHTML = infoHtml;
+  }
+}
+
+function closeKeySidebar() {
+  document.getElementById('key-sidebar').classList.remove('open');
+}
+
+function saveKeySidebar() {
+  if(!selK) return;
+  var newLabel = document.getElementById('ks-label').value.trim();
+
+  var p = presets[actP];
+  if(selK.type === 'enc') {
+    cloneIfDefault('enc');
+    ENC[p.enc][selK.sec][selK.part] = newLabel || '—';
+  } else {
+    cloneIfDefault(selK.sec);
+    var actObj = MAT[p[selK.sec]][selK.idx];
+    if(actObj) {
+      actObj.l = newLabel;
+    } else if(newLabel) {
+      MAT[p[selK.sec]][selK.idx] = { t: 'custom', l: newLabel };
+    }
+  }
+  renderBoard();
+  saveH();
+  closeKeySidebar();
+  toast('Label tersimpan', 'ok');
+}
+
+// ══════════════════════════════════════════
 // BOARD
 // ══════════════════════════════════════════
 function badge(a){
   if(!a)return'';
-  var cl=a.t==='midi'?'bd-midi':a.t==='media'?'bd-media':a.t==='macro'?'bd-macro':a.t==='td'?'bd-td':a.t==='stream'?'bd-stream':'bd-hid';
+  var cl=a.t==='midi'?'bd-midi':a.t==='media'?'bd-media':a.t==='macro'?'bd-macro':a.t==='td'?'bd-td':'bd-hid';
   return'<div class="kbd '+cl+'"></div>';
 }
 function renderBoard(){
@@ -809,12 +895,14 @@ function drawGrid(sec,divId,bIdx){
   }
 }
 function selKey(type,sec,part,idx){
-  clearFocusTarget(); // Reset dynamic target focus saat memilih tombol mapping
+  clearFocusTarget(); 
   selK={type:type,sec:sec,part:part,idx:idx};updSelVis();
   var bName,loc;
   if(type==='enc'){bName=BN.enc[presets[actP].enc];loc='Enc '+(parseInt(sec)+1)+' ['+part.toUpperCase()+']';}
-  else{bName=BN[sec][presets[actP][sec]];loc=sec+' Key #'+(idx+1);}
+  else{bName=BN[sec][presets[actP][sec]];loc=sec.replace('padl','Pad L').replace('mat','Matrix').replace('padr','Pad R')+' Key #'+(idx+1);}
   document.getElementById('status-msg').innerHTML='<span class="hi">▶ '+loc+'</span> — '+bName;
+  
+  openKeySidebar(loc, bName);
 }
 function updSelVis(){
   document.querySelectorAll('.key.sel').forEach(function(k){k.classList.remove('sel');});
@@ -830,12 +918,11 @@ function applyAction(actObj){
   if(!actObj) return;
   var label = actObj.l || actObj.code || actObj.n;
 
-  // Jika ada slot dinamik yang sedang fokus (Combo, TapDance, Macro)
   if (activeTarget) {
     if (activeTarget.type === 'comboKey') {
       if(label === 'Clear') COMBOS[activeTarget.ci].keys[activeTarget.k] = undefined;
       else COMBOS[activeTarget.ci].keys[activeTarget.k] = label;
-      COMBOS[activeTarget.ci].keys = COMBOS[activeTarget.ci].keys.filter(Boolean); // bersihkan gap
+      COMBOS[activeTarget.ci].keys = COMBOS[activeTarget.ci].keys.filter(Boolean); 
       renderCombos(); saveH();
     } 
     else if (activeTarget.type === 'comboAct') {
@@ -850,7 +937,6 @@ function applyAction(actObj){
       var mi = activeTarget.mi;
       var sel = document.getElementById('mt-'+mi);
       if(sel.value === 'action') {
-         // Simpan string berformat khusus untuk firmware jika diperlukan, atau sekadar labelnya
          document.getElementById('mv-'+mi).value = (actObj.t==='hid') ? actObj.l : (actObj.t.toUpperCase() + ':' + label);
       } else {
          document.getElementById('mv-'+mi).value = label;
@@ -858,10 +944,9 @@ function applyAction(actObj){
       document.getElementById('mv-'+mi).dispatchEvent(new Event('input',{bubbles:true}));
       document.getElementById('mv-'+mi).dispatchEvent(new Event('change',{bubbles:true}));
     }
-    return; // Selesai jika menarget slot dinamis
+    return;
   }
 
-  // Fallback: Jika tidak ada target spesifik, asumsikan mapping Keymap biasa
   var activeWs=document.querySelector('.ws.on').id;
   if(activeWs==='ws-keymap' && document.activeElement===document.getElementById('mo-inp')){
     document.getElementById('mo-inp').value=label; return;
@@ -874,17 +959,18 @@ function applyAction(actObj){
     return;
   }
 
-  // Keymap Assign Standar
   if(!selK){toast('Klik dulu slot/tombol layout!','err');return;}
   var p=presets[actP];
   var finalAct = (actObj.l === 'Clear') ? null : actObj;
   
   if(selK.type==='enc'){
     cloneIfDefault('enc');ENC[p.enc][selK.sec][selK.part] = finalAct ? finalAct.l : '—';
+    openKeySidebar(document.getElementById('ks-title').innerText, document.getElementById('ks-bank').innerText);
   } else {
     var sec=selK.sec;cloneIfDefault(sec);
     MAT[p[sec]][selK.idx] = finalAct;
-    if(finalAct && selK.idx<15) selKey('mat',sec,null,selK.idx+1); // auto next
+    if(finalAct && selK.idx<15) selKey('mat',sec,null,selK.idx+1); 
+    else openKeySidebar(document.getElementById('ks-title').innerText, document.getElementById('ks-bank').innerText);
   }
   renderBoard();saveH();
 }
@@ -894,7 +980,6 @@ function applyAction(actObj){
 // ══════════════════════════════════════════
 function grabKeyOnInput(inp){
   inp.addEventListener('keydown',function(e){
-    // Jangan grab jika sedang dalam mode "Virtual Action"
     var typeSel = document.getElementById('mt-' + this.id.split('-')[1]);
     if(typeSel && typeSel.value === 'action') { e.preventDefault(); return; }
 
@@ -961,7 +1046,6 @@ function updMidiPicker() {
       virtualMidiVel = midiV;
       velModeSelect = document.getElementById('vel-mod-type').value;
       updMidiPicker(); 
-      // Assign Action directly if there's a target
       if(activeTarget || selK) {
         applyAction({t:'midi', s:'modifier', mod:'vel_set', v: midiV, mode: velModeSelect, l: 'Vel '+v+'%'});
         toast('Assigned: Velocity '+v+'% ('+velModeSelect+')', 'ok');
@@ -1001,7 +1085,7 @@ function updMidiPicker() {
 
     for(var oct = 0; oct < g.octs; oct++){
       for(var i = 0; i < 12; i++){
-        var baseNote = 12 + ((g.start + oct) * 12) + i; // 12 is C0
+        var baseNote = 12 + ((g.start + oct) * 12) + i; 
         var finalNote = baseNote + trans;
         
         if(finalNote < 0 || finalNote > 127) {
@@ -1020,11 +1104,9 @@ function updMidiPicker() {
   noteBox.appendChild(container);
   mnig.appendChild(noteBox);
 
-  // Re-bind preserved state
   document.getElementById('vel-mod-type').value = velModeSelect;
   document.getElementById('vel-mod-type').onchange = function() { velModeSelect = this.value; };
 
-  // Bind Assignable Modifiers
   document.getElementById('btn-pk-tup').onclick = function() { applyAction({t:'midi', s:'modifier', mod:'trans_up', l:'Trans +'}); };
   document.getElementById('btn-pk-tdn').onclick = function() { applyAction({t:'midi', s:'modifier', mod:'trans_dn', l:'Trans -'}); };
   document.getElementById('btn-pk-vup').onclick = function() { applyAction({t:'midi', s:'modifier', mod:'vel_up', l:'Vel +'}); };
@@ -1032,8 +1114,9 @@ function updMidiPicker() {
 }
 
 function populatePicker(){
-  // BASIC KEYS — Virtual Keyboard (Flexbox Layout yang Sangat Rapi)
+  // BASIC KEYS — Layout Flexbox Rapi, F13-F24 di baris atas
   var kbLayout=[
+    [{k:'F13'},{k:'F14'},{k:'F15'},{k:'F16'},{k:'F17'},{k:'F18'},{k:'F19'},{k:'F20'},{k:'F21'},{k:'F22'},{k:'F23'},{k:'F24'}],
     [{k:'Esc'},{k:'F1'},{k:'F2'},{k:'F3'},{k:'F4'},{k:'F5'},{k:'F6'},{k:'F7'},{k:'F8'},{k:'F9'},{k:'F10'},{k:'F11'},{k:'F12'},{k:'Del',w:'w-15'}],
     [{k:'~'},{k:'1'},{k:'2'},{k:'3'},{k:'4'},{k:'5'},{k:'6'},{k:'7'},{k:'8'},{k:'9'},{k:'0'},{k:'-'},{k:'='},{k:'Bspc',w:'w-15'}],
     [{k:'Tab',w:'w-15'},{k:'Q'},{k:'W'},{k:'E'},{k:'R'},{k:'T'},{k:'Y'},{k:'U'},{k:'I'},{k:'O'},{k:'P'},{k:'['},{k:']'},{k:'\\'}],
@@ -1062,7 +1145,7 @@ function populatePicker(){
     mainKbd.appendChild(rw);
   });
 
-  var npKbd=document.createElement('div');npKbd.style.cssText='display:flex;flex-direction:column;gap:3px;align-items:flex-start;max-width:200px;flex:0.3';
+  var npKbd=document.createElement('div');npKbd.className='kbd-half np';
   npLayout.forEach(function(row){
     var rw=document.createElement('div');rw.className='kbd-row';
     row.forEach(function(item){
@@ -1084,29 +1167,40 @@ function populatePicker(){
    ['Save','Ctrl+S'],['Find','Ctrl+F'],['Print','Ctrl+P'],['PrtScr',''],['Zoom+','Ctrl++'],['Zoom-','Ctrl+-'],['FullScr','F11']
   ].forEach(function(m){mg.appendChild(mkPK(m[0],m[1],'pk-media',{t:'media',l:m[0]}));});
 
-  // STREAM
-  var sg=document.getElementById('pk-stream');
-  addSec('OBS Studio',sg);
-  [{l:'OBS:Record',k:'F13'},{l:'OBS:Stream',k:'F14'},{l:'Scene 1',k:'F15'},{l:'Scene 2',k:'F16'},{l:'Scene 3',k:'F17'},{l:'Mute Mic',k:'F18'}]
-    .forEach(function(a){sg.appendChild(mkPK(a.l,a.k,'pk-obs',{t:'stream',l:a.l,code:a.k}));});
-  addSec('Discord',sg);
-  [{l:'Mic Tog',k:'F19'},{l:'Deaf Tog',k:'F20'},{l:'PushTalk',k:'F21'},{l:'Screen',k:'F22'}]
-    .forEach(function(a){sg.appendChild(mkPK(a.l,a.k,'pk-sd',{t:'stream',l:a.l,code:a.k}));});
-  addSec('Custom',sg);
-  ['F13','F14','F15','F16','F17','F18','F19','F20','F21','F22','F23','F24']
-    .forEach(function(f){sg.appendChild(mkPK(f,'','pk-obs',{t:'stream',l:f,code:f}));});
-
   // MIDI NOTE PICKER INIT
   updMidiPicker();
 
-  // MIDI CC Picker
+  // MIDI CC Picker (Profesional Options)
   var mccg = document.getElementById('pk-midicc');
-  addSec('Control Change', mccg);
-  [{t:'midi',s:'cc',n:64,l:'Sustain'},{t:'midi',s:'cc',n:1,l:'Mod Whl'},{t:'midi',s:'cc',n:11,l:'Expr'},
-   {t:'midi',s:'cc',n:10,l:'Pan'},{t:'midi',s:'cc',n:7,l:'Volume'},{t:'midi',s:'cc',n:74,l:'Cutoff'},
-   {t:'midi',s:'cc',n:71,l:'Resonance'},{t:'midi',s:'cc',n:91,l:'Reverb'},{t:'midi',s:'cc',n:93,l:'Chorus'},
-   {t:'midi',s:'panic',l:'PANIC'}].forEach(function(a){
-    mccg.appendChild(mkPK(a.l,a.s==='cc'?'CC'+a.n:a.s,'pk-midi',a));
+  mccg.innerHTML = '<div class="midi-group-container" id="mccg-container"></div>';
+  var ccContainer = document.getElementById('mccg-container');
+
+  var quickBox = document.createElement('div');
+  quickBox.className = 'midi-group-box';
+  quickBox.innerHTML = '<div class="midi-group-title">Quick Actions & Pedals</div><div class="pkgrid" id="cc-quick"></div>';
+  ccContainer.appendChild(quickBox);
+  var cq = document.getElementById('cc-quick');
+  cq.appendChild(mkPK('Sustain (Hold)', 'CC64', 'pk-midi', {t:'midi', s:'cc', n:64, l:'Sustain (Hold)', mode:'momentary', min:0, max:127}));
+  cq.appendChild(mkPK('Sustain (Toggle)', 'CC64', 'pk-midi', {t:'midi', s:'cc', n:64, l:'Sustain (Toggle)', mode:'toggle', min:0, max:127}));
+  cq.appendChild(mkPK('PANIC', 'All Notes Off', 'pk-red', {t:'midi', s:'panic', l:'PANIC'})); 
+
+  var ccGroups = [
+    { title: "Standard Controls", ccs: [[1,'Mod Wheel'], [2,'Breath'], [4,'Foot Pedal'], [7,'Volume'], [10,'Pan'], [11,'Expression']] },
+    { title: "Switches & Pedals", ccs: [[65,'Portamento'], [66,'Sostenuto'], [67,'Soft Pedal'], [68,'Legato']] },
+    { title: "Sound Controllers", ccs: [[70,'Sound Var'], [71,'Resonance'], [72,'Release'], [73,'Attack'], [74,'Cutoff']] },
+    { title: "Effects Depth", ccs: [[91,'Reverb'], [92,'Tremolo'], [93,'Chorus'], [94,'Celeste'], [95,'Phaser']] }
+  ];
+
+  ccGroups.forEach(function(g) {
+      var box = document.createElement('div');
+      box.className = 'midi-group-box';
+      box.style.minWidth = '220px';
+      box.innerHTML = '<div class="midi-group-title">' + g.title + '</div><div class="pkgrid" id="cc-grp-'+g.title.replace(/\s+/g,'')+'"></div>';
+      ccContainer.appendChild(box);
+      var gDiv = document.getElementById('cc-grp-'+g.title.replace(/\s+/g,''));
+      g.ccs.forEach(function(cc) {
+          gDiv.appendChild(mkPK(cc[1], 'CC'+cc[0], 'pk-midi', {t:'midi', s:'cc', n:cc[0], l:cc[1]}));
+      });
   });
 
   // LED
@@ -1127,6 +1221,7 @@ function populatePicker(){
 
   updMacroPicker();
 }
+
 function updMacroPicker(){
   var mg=document.getElementById('pk-macro');mg.innerHTML='';
   addSec('Macros',mg);
@@ -1155,6 +1250,9 @@ function initBankEvents(){
   document.getElementById('btn-add-padl-bank').addEventListener('click',function(){addBank('padL');});
   document.getElementById('btn-add-mat-bank').addEventListener('click',function(){addBank('mat');});
   document.getElementById('btn-add-padr-bank').addEventListener('click',function(){addBank('padR');});
+  
+  document.getElementById('btn-ks-cancel').addEventListener('click', closeKeySidebar);
+  document.getElementById('btn-ks-save').addEventListener('click', saveKeySidebar);
 }
 async function renameBank(sec){
   var bIdx=presets[actP][sec];
@@ -1689,7 +1787,7 @@ function renderCCList(){
     card.querySelector(`#ccmax-${i}`).addEventListener('change', function(){ MIDI_CFG.ccValues[i].max = parseInt(this.value)||0; saveH(); });
     
     card.querySelector(`[data-cc-assign="${i}"]`).addEventListener('click', function(){
-      applyAction({t:'midi', s:'cc', n:cc.cc, l:cc.name});
+      applyAction({t:'midi', s:'cc', n:cc.cc, l:cc.name, mode:cc.mode, min:cc.min, max:cc.max});
       toast('Assign CC'+cc.cc+' ke key', 'ok');
     });
     card.querySelector(`[data-cc-del="${i}"]`).addEventListener('click', async function(){
@@ -1697,133 +1795,6 @@ function renderCCList(){
       if(v==='HAPUS'){ MIDI_CFG.ccValues.splice(i,1); renderCCList(); saveH(); }
     });
   });
-}
-
-// ══════════════════════════════════════════
-// STREAM EDITOR
-// ══════════════════════════════════════════
-function renderStream(){
-  var c=document.getElementById('stream-container');c.innerHTML='';
-  var grid=document.createElement('div');grid.className='stream-grid';
-  STREAM_APPS.forEach(function(app,ai){
-    var card=document.createElement('div');card.className='stream-app';
-    var actHTML=app.actions.map(function(act,aci){
-      return'<div class="stream-action">'+
-        '<span class="sa-key">'+act.key+'</span>'+
-        '<span class="sa-name" contenteditable="true" spellcheck="false" data-ai="'+ai+'" data-aci="'+aci+'" style="outline:none;cursor:text" title="Klik untuk rename aksi">'+act.name+'</span>'+
-        '<span class="sa-edit" data-assign-ai="'+ai+'" data-assign-aci="'+aci+'" title="Assign ke key di keymap">→Key</span>'+
-        '<span class="sa-edit" data-del-ai="'+ai+'" data-del-aci="'+aci+'" style="color:var(--red)" title="Hapus aksi">✕</span>'+
-        '</div>';
-    }).join('');
-    card.innerHTML=
-      '<div class="stream-app-h">'+
-      '<div class="stream-app-ico" style="background:'+app.color+'20;border:1px solid '+app.color+'40">'+app.icon+'</div>'+
-      '<span style="font-size:11px;font-weight:700;flex:1;cursor:text" contenteditable="true" spellcheck="false" data-app-name="'+ai+'" title="Klik untuk rename app">'+app.name+'</span>'+
-      '<button class="btn btn-green" style="font-size:8px;padding:2px 6px" data-add-act="'+ai+'">+ Aksi</button>'+
-      '<button class="btn btn-red" style="font-size:8px;padding:2px 6px" data-del-app="'+ai+'" title="Hapus App">🗑</button></div>'+
-      '<div class="stream-app-b">'+actHTML+'</div>';
-    grid.appendChild(card);
-  });
-  c.appendChild(grid);
-
-  c.querySelectorAll('[data-app-name]').forEach(function(el){
-    el.addEventListener('input',function(){STREAM_APPS[parseInt(this.dataset.appName)].name=this.textContent;saveH();});
-  });
-  c.querySelectorAll('[data-ai][data-aci]').forEach(function(el){
-    el.addEventListener('input',function(){STREAM_APPS[parseInt(this.dataset.ai)].actions[parseInt(this.dataset.aci)].name=this.textContent;saveH();});
-  });
-  c.querySelectorAll('[data-assign-ai]').forEach(function(el){
-    el.addEventListener('click',function(){
-      var ai=parseInt(this.dataset.assignAi),aci=parseInt(this.dataset.assignAci);
-      var act=STREAM_APPS[ai].actions[aci];
-      applyAction({t:'stream',l:act.name,code:act.key});toast('Assign "'+act.name+'" ke key','ok');
-    });
-  });
-  c.querySelectorAll('[data-del-aci]').forEach(function(el){
-    el.addEventListener('click',function(){
-      var ai=parseInt(this.dataset.delAi),aci=parseInt(this.dataset.delAci);
-      STREAM_APPS[ai].actions.splice(aci,1);renderStream();saveH();
-    });
-  });
-  c.querySelectorAll('[data-del-app]').forEach(function(el){
-    el.addEventListener('click',async function(){
-      if(STREAM_APPS.length<=1){toast('Minimal 1 app!','err');return;}
-      var ai=parseInt(this.dataset.delApp);
-      var v=await showModal('Hapus App','Ketik HAPUS:','');
-      if(v==='HAPUS'){STREAM_APPS.splice(ai,1);renderStream();saveH();toast('App dihapus','ok');}
-    });
-  });
-  c.querySelectorAll('[data-add-act]').forEach(function(el){
-    el.addEventListener('click',async function(){
-      var ai=parseInt(this.dataset.addAct);
-      var usedKeys=STREAM_APPS.flatMap(function(a){return a.actions.map(function(ac){return ac.key;});});
-      var allFKeys=['F13','F14','F15','F16','F17','F18','F19','F20','F21','F22','F23','F24'];
-      var nextKey=allFKeys.find(function(f){return!usedKeys.includes(f);})||'F13';
-      var name=await showModal('Nama Aksi','Nama untuk aksi baru (key: '+nextKey+'):','New Action');
-      if(!name)return;
-      STREAM_APPS[ai].actions.push({key:nextKey,name:name});
-      renderStream();saveH();toast('Aksi ditambahkan ('+nextKey+')','ok');
-    });
-  });
-
-  document.getElementById('btn-add-stream-app').onclick=async function(){
-    var name=await showModal('Nama App','Nama aplikasi baru:','My App');
-    if(!name)return;
-    var emoji=await showModal('Ikon Emoji','Emoji ikon (1 karakter):','🎯');
-    STREAM_APPS.push({name:name||'My App',icon:emoji||'🎯',color:'#6c63ff',actions:[]});
-    renderStream();saveH();toast('App baru ditambahkan','ok');
-  };
-}
-
-// ══════════════════════════════════════════
-// LED EDITOR
-// ══════════════════════════════════════════
-function renderLED(){
-  var c=document.getElementById('led-container');
-  c.innerHTML=
-    '<div class="led-grid">'+
-    '<div class="led-card"><h4>Mode LED</h4>'+
-    '<div class="mbtns">'+
-    '<button class="mbtn '+(LED.mode==='single'?'on':'')+'" id="lm-single">Single</button>'+
-    '<button class="mbtn '+(LED.mode==='fade'?'on':'')+'" id="lm-fade">Fade</button>'+
-    '<button class="mbtn '+(LED.mode==='responsive'?'on':'')+'" id="lm-resp">Responsive</button>'+
-    '</div>'+
-    '<div style="margin-top:10px"><div class="lr"><label>Brightness</label>'+
-    '<input type="range" min="0" max="100" value="'+LED.brightness+'" id="led-bright">'+
-    '<span class="lv" id="lv-bright">'+LED.brightness+'%</span></div></div></div>'+
-    '<div class="led-card"><h4>Single Color</h4>'+
-    '<div class="lr"><label>Hue</label><input type="range" min="0" max="360" value="'+LED.hue+'" id="led-hue"><span class="lv" id="lv-hue">'+LED.hue+'°</span></div>'+
-    '<div class="lr"><label>Saturation</label><input type="range" min="0" max="100" value="'+LED.sat+'" id="led-sat"><span class="lv" id="lv-sat">'+LED.sat+'%</span></div>'+
-    '<div class="lr"><label>Preview</label><div id="led-prev" style="width:50px;height:20px;border-radius:4px;border:1px solid var(--border2);background:hsl('+LED.hue+','+LED.sat+'%,45%)"></div></div></div>'+
-    '<div class="led-card"><h4>Responsive Mode</h4>'+
-    '<div class="lr"><label>Hit Hue</label><input type="range" min="0" max="360" value="'+LED.respHue+'" id="led-rhue"><span class="lv" id="lv-rhue">'+LED.respHue+'°</span></div>'+
-    '<div class="lr"><label>Duration</label><input type="range" min="50" max="2000" step="50" value="'+LED.respDur+'" id="led-rdur"><span class="lv" id="lv-rdur">'+LED.respDur+'ms</span></div>'+
-    '<div class="lr"><label>Random Hue</label><input type="checkbox" '+(LED.respRandom?'checked':'')+' id="led-rrand" style="accent-color:var(--accent);transform:scale(1.2)"></div></div>'+
-    '<div class="led-card"><h4>Fade / Cycle</h4>'+
-    '<div class="lr"><label>Speed</label><input type="range" min="1" max="20" value="'+LED.fadeSpeed+'" id="led-fspd"><span class="lv" id="lv-fspd">'+LED.fadeSpeed+'</span></div>'+
-    '<div style="font-size:8px;color:var(--muted)">Lebih tinggi = lebih cepat</div></div></div>';
-
-  ['single','fade','resp'].forEach(function(m){
-    document.getElementById('lm-'+m).addEventListener('click',function(){
-      LED.mode=m==='resp'?'responsive':m;
-      document.querySelectorAll('.mbtn').forEach(function(b){b.classList.remove('on');});
-      this.classList.add('on');saveH();
-    });
-  });
-  var rng=function(id,prop,unit,dp){
-    var el=document.getElementById(id);if(!el)return;
-    el.addEventListener('input',function(){
-      LED[prop]=parseFloat(this.value);
-      document.getElementById(dp).textContent=this.value+unit;
-      if(prop==='hue'||prop==='sat'){var p=document.getElementById('led-prev');if(p)p.style.background='hsl('+LED.hue+','+LED.sat+'%,45%)';}
-      saveH();
-    });
-  };
-  rng('led-bright','brightness','%','lv-bright');rng('led-hue','hue','°','lv-hue');
-  rng('led-sat','sat','%','lv-sat');rng('led-rhue','respHue','°','lv-rhue');
-  rng('led-rdur','respDur','ms','lv-rdur');rng('led-fspd','fadeSpeed','','lv-fspd');
-  var rr=document.getElementById('led-rrand');
-  if(rr)rr.addEventListener('change',function(){LED.respRandom=this.checked;saveH();});
 }
 
 // ══════════════════════════════════════════
@@ -1865,7 +1836,7 @@ function setConnUI(live){
 // ══════════════════════════════════════════
 function initIO(){
   document.getElementById('btn-export').addEventListener('click',function(){
-    var d=JSON.stringify({presets,MAT,ENC,MACROS,TAPDANCES,COMBOS,ALTREPEAT,LED,BN,MIDI_CFG,STREAM_APPS},null,2);
+    var d=JSON.stringify({presets,MAT,ENC,MACROS,TAPDANCES,COMBOS,ALTREPEAT,LED,BN,MIDI_CFG},null,2);
     var a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob([d],{type:'application/json'}));
     a.download='macropad_config.json';a.click();toast('Config diekspor!','ok');
