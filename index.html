@@ -1,1457 +1,1929 @@
-bash
-
-cat > /home/claude/MacroPad_WebConfig/index.html << 'HTMLEOF'
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MacroPad Configurator</title>
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#5b6af5">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<title>MacroPad Studio — ESP32-S3</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg0: #0a0a0f;
-  --bg1: #111118;
-  --bg2: #16161f;
-  --bg3: #1e1e2a;
-  --border: #2a2a3a;
-  --border-hi: #3d3d52;
-  --text: #e2e2f0;
-  --text-dim: #888899;
-  --text-muted: #444455;
-  --accent: #5b6af5;
-  --accent-dim: #3a4299;
-  --green: #3ddc84;
-  --green-dim: #1a5e38;
-  --red: #ff4d6a;
-  --orange: #ff9f43;
-  --purple: #a55eea;
-  --cyan: #00d2d3;
-  --yellow: #ffd32a;
+:root{
+  --bg:#13141c;--bg2:#1a1b26;--bg3:#22243a;--bg4:#2c2f4a;
+  --border:#2e3155;--border2:#404470;
+  --text:#e2e4f8;--muted:#5c6090;--muted2:#8589b8;
+  --accent:#7c6cff;--accent2:#a097ff;--accent3:#4a3eb8;
+  --green:#3ddc84;--red:#f06b6b;--amber:#f5a623;--cyan:#29d9c2;--purple:#c792ea;
+  --key-bg:#1e2035;--key-b:#323660;--key-shd:#0d0e18;
+  --midi:#29d9c2;--media:#3ddc84;--macro:#a097ff;--td:#c792ea;--hid:#5c6090;--stream:#5865f2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent3)}
 
-  --key-hid: #2a3a5c;
-  --key-hid-border: #4a6aaa;
-  --key-hid-text: #88aaff;
+/* ── LAYOUT ── */
+body{display:flex;flex-direction:column;height:100vh}
+#topbar{display:flex;align-items:center;gap:3px;padding:0 12px;height:46px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0;z-index:200;overflow-x:auto}
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+#workspaces{flex:1;display:flex;overflow:hidden;min-height:0}
+.ws{display:none;flex:1;flex-direction:column;overflow:hidden;width:100%}
+.ws.on{display:flex}
 
-  --key-midi: #2a4a3a;
-  --key-midi-border: #3a8a5a;
-  --key-midi-text: #55dd99;
+/* ── TOPBAR ── */
+.logo{display:flex;align-items:center;gap:7px;margin-right:8px;flex-shrink:0}
+.logo-mark{width:26px;height:26px;background:var(--accent);border-radius:6px;display:grid;place-items:center;font-weight:800;font-size:12px;color:#fff;letter-spacing:-1px}
+.logo-name{font-size:12px;font-weight:700}
+.logo-sub{font-size:8px;color:var(--muted);letter-spacing:.05em}
 
-  --key-media: #4a3a1a;
-  --key-media-border: #8a6a2a;
-  --key-media-text: #ffaa44;
+.ntab{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;color:var(--muted2);cursor:pointer;border:none;background:transparent;transition:.12s;white-space:nowrap}
+.ntab:hover{color:var(--text);background:var(--bg3)}
+.ntab.on{color:var(--accent2);background:rgba(124,108,255,.14)}
+.sep{width:1px;height:18px;background:var(--border);margin:0 4px;flex-shrink:0}
+.tbr{margin-left:auto;display:flex;align-items:center;gap:4px}
+.btn{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text);transition:.1s;white-space:nowrap;flex-shrink:0}
+.btn:hover{background:var(--bg4)}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-green{background:rgba(61,220,132,.1);border-color:rgba(61,220,132,.35);color:var(--green)}
+.btn-green:hover{background:rgba(61,220,132,.18)}
+.btn-red{background:rgba(240,107,107,.1);border-color:rgba(240,107,107,.35);color:var(--red)}
+.btn-red:hover{background:rgba(240,107,107,.18)}
+.btn-accent{background:var(--accent);border-color:var(--accent3);color:#fff}
+.btn-accent:hover{background:var(--accent2)}
+.btn-amber{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.35);color:var(--amber)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.dot.live{background:var(--green);box-shadow:0 0 6px var(--green)}
 
-  --key-daw: #3a2a4a;
-  --key-daw-border: #6a4a8a;
-  --key-daw-text: #cc88ff;
+/* ── PRESET BAR ── */
+#pbar{display:flex;align-items:center;gap:4px;padding:6px 12px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);overflow-x:auto}
+.pbar-label{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+#preset-list{display:flex;gap:3px;align-items:center;flex-shrink:0}
+.ppill{padding:3px 9px;border-radius:4px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--muted2);transition:.1s;white-space:nowrap}
+.ppill:hover{background:var(--bg3);color:var(--text)}
+.ppill.on{background:var(--accent3);border-color:var(--accent);color:#fff}
+#status-msg{margin-left:auto;font-size:10px;color:var(--muted);white-space:nowrap;padding-left:8px;flex-shrink:0}
+#status-msg .hi{color:var(--amber)}
 
-  --key-empty: #1a1a24;
-  --key-empty-border: #2a2a38;
-  --key-empty-text: #444455;
-}
+/* ── TARGET FOCUS HIGHLIGHT ── */
+.target-focus { border: 2px solid var(--accent) !important; box-shadow: 0 0 10px rgba(124,108,255,0.4) !important; background: rgba(124,108,255,0.1) !important; }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── LAYOUT AREA ── */
+#layout-area{flex:1;overflow:auto;padding:16px;display:flex;align-items:flex-start;justify-content:center;background:var(--bg)}
 
-body {
-  font-family: 'JetBrains Mono', monospace;
-  background: var(--bg0);
-  color: var(--text);
-  min-height: 100vh;
-  overflow-x: hidden;
-}
+/* ── BOARD ── */
+.board{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px 18px 18px;display:flex;flex-direction:column;gap:14px;align-items:center;min-width:fit-content}
+.enc-row{display:flex;align-items:center;gap:14px}
+.enc-group{position:relative;display:flex;gap:2px;padding:5px;background:var(--bg);border:1px solid var(--border);border-radius:8px}
+.enc-lbl{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+.oled-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+.oled{width:148px;height:52px;background:#000;border:2px solid #1a1a2e;border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--accent2);letter-spacing:.5px;flex-shrink:0}
+.oled-sub{font-size:7px;color:var(--muted);margin-top:2px;max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-/* ─── HEADER ─────────────────────────────────────── */
-.header {
-  background: var(--bg1);
-  border-bottom: 1px solid var(--border);
-  padding: 14px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.logo-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--accent);
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-.header h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-.header h1 span { color: var(--accent); }
-.header-right { display: flex; align-items: center; gap: 10px; }
+/* ── BANK ROW ── */
+.bank-row{display:flex;align-items:center;gap:2px;width:100%}
+.bsel{flex:1;height:22px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);font-size:9px;font-weight:600;border-radius:4px;outline:none;padding:0 4px;cursor:pointer}
+.bsel:focus{border-color:var(--accent)}
+.bico{width:22px;height:22px;display:grid;place-items:center;border:1px solid var(--border2);border-radius:4px;background:var(--bg3);cursor:pointer;font-size:10px;color:var(--muted2);transition:.1s;flex-shrink:0}
+.bico:hover{background:var(--bg4);color:var(--text)}
+.bico.rd:hover{color:var(--red);border-color:var(--red)}
 
-.badge {
-  font-size: 10px;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-.badge-disconnected { background: rgba(255,77,106,0.15); color: var(--red); border: 1px solid rgba(255,77,106,0.3); }
-.badge-connected { background: rgba(61,220,132,0.15); color: var(--green); border: 1px solid rgba(61,220,132,0.3); animation: pulse-green 2s infinite; }
-@keyframes pulse-green { 0%,100%{opacity:1} 50%{opacity:0.7} }
-.badge-nowebserial { background: rgba(255,159,67,0.15); color: var(--orange); border: 1px solid rgba(255,159,67,0.3); }
+/* ── PANELS ── */
+.panels-row{display:flex;gap:14px;align-items:flex-start}
+.panel-col{display:flex;flex-direction:column;gap:5px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--bg);border:1px solid var(--border);padding:5px;border-radius:8px}
 
-.btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  border: none;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  letter-spacing: 0.3px;
-}
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: #7080ff; transform: translateY(-1px); }
-.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:hover { border-color: var(--border-hi); background: var(--bg2); }
-.btn-danger { background: rgba(255,77,106,0.15); color: var(--red); border: 1px solid rgba(255,77,106,0.3); }
-.btn-danger:hover { background: rgba(255,77,106,0.25); }
-.btn-success { background: rgba(61,220,132,0.15); color: var(--green); border: 1px solid rgba(61,220,132,0.3); }
-.btn-success:hover { background: rgba(61,220,132,0.25); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
-.btn-sm { padding: 5px 10px; font-size: 11px; }
-.btn-icon { width: 32px; height: 32px; padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+/* ── KEY ── */
+.key{width:52px;height:52px;background:var(--key-bg);border:1px solid var(--key-b);border-bottom:3px solid var(--key-shd);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3px;cursor:pointer;font-size:8px;font-weight:700;color:var(--text);line-height:1.2;transition:border-color .1s,transform .05s;position:relative;user-select:none}
+.key:hover{border-color:var(--border2);background:#252845}
+.key:active{transform:translateY(2px);border-bottom-width:1px}
+.key.sel{border:2px solid var(--accent)!important;border-bottom:3px solid var(--accent)!important;background:#1e1c40;box-shadow:0 0 10px rgba(124,108,255,.25);z-index:2}
+.key .ksub{font-size:6.5px;color:var(--muted);margin-top:2px;font-weight:600;text-transform:uppercase}
+.key.enc-k{width:44px;height:44px;font-size:7.5px}
+.kbd{width:5px;height:5px;border-radius:50%;position:absolute;top:2px;right:2px}
+.bd-midi{background:var(--midi)}
+.bd-media{background:var(--media)}
+.bd-macro{background:var(--macro)}
+.bd-td{background:var(--purple)}
+.bd-hid{background:var(--hid)}
+.bd-stream{background:var(--stream)}
 
-/* ─── PRESET BAR ─────────────────────────────────── */
-.preset-bar {
-  background: var(--bg1);
-  border-bottom: 1px solid var(--border);
-  padding: 10px 24px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  overflow-x: auto;
-}
-.preset-bar label { font-size: 11px; color: var(--text-dim); margin-right: 4px; white-space: nowrap; }
-.preset-tab {
-  padding: 5px 14px;
-  border-radius: 5px;
-  font-size: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  cursor: pointer;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  color: var(--text-dim);
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-.preset-tab.active {
-  background: var(--accent-dim);
-  border-color: var(--accent);
-  color: #fff;
-}
-.preset-tab:hover:not(.active) { border-color: var(--border-hi); color: var(--text); }
-.preset-bar-divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; flex-shrink: 0; }
-.preset-bar-right { margin-left: auto; display: flex; gap: 8px; flex-shrink: 0; }
+/* ── PICKER (global bottom) ── */
+#picker{height:38vh;min-height:260px;flex-shrink:0;background:var(--bg2);border-top:1px solid var(--border);display:flex;flex-direction:column;z-index:100}
+#ptabs{display:flex;align-items:stretch;background:var(--bg);border-bottom:1px solid var(--border);padding:0 8px;overflow-x:auto;flex-shrink:0}
+.ptab{padding:7px 10px;font-size:10px;font-weight:600;color:var(--muted2);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;transition:.1s}
+.ptab:hover{color:var(--text)}
+.ptab.on{color:var(--accent2);border-bottom-color:var(--accent)}
+.ptabs-r{margin-left:auto;display:flex;align-items:center;gap:4px;padding:4px 0;flex-shrink:0}
+#pbody{flex:1;overflow-y:auto;padding:8px 12px 20px}
+.pb{display:none}
+.pb.on{display:block}
 
-/* ─── MAIN LAYOUT ────────────────────────────────── */
-.main { padding: 24px; max-width: 1200px; margin: 0 auto; }
+/* ── VIRTUAL KBD FLEXBOX REWRITE ── */
+.kbd-section{display:flex;gap:14px;justify-content:center;flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px;}
+.kbd-half{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:1;max-width:700px}
+.kbd-row{display:flex;gap:3px;justify-content:stretch;width:100%}
+.pk{flex:1 1 30px;display:flex;flex-direction:column;align-items:center;justify-content:center;height:34px;padding:0 2px;border:1px solid var(--border2);border-radius:4px;background:var(--bg3);color:var(--text);font-size:9px;font-weight:700;cursor:pointer;text-align:center;line-height:1.2;transition:.08s;user-select:none;flex-shrink:1;min-width:0;overflow:hidden}
+.pk:hover{border-color:var(--accent);background:var(--bg4)}
+.pk:active{transform:scale(.94)}
+.pk .ps{font-size:7px;color:var(--muted);margin-top:1px}
+.pk.sel{border-color:var(--accent);background:rgba(124,108,255,.15);color:var(--accent2)}
 
-/* ─── SECTION CARD ───────────────────────────────── */
-.card {
-  background: var(--bg1);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-.card-header {
-  background: var(--bg2);
-  padding: 12px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.card-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-dim);
-}
-.card-body { padding: 18px; }
+/* Flex Ratios untuk Tuts Modifiers */
+.pk.w-125{flex:1.25}
+.pk.w-15{flex:1.5}
+.pk.w-175{flex:1.75}
+.pk.w-200{flex:2}
+.pk.w-225{flex:2.25}
+.pk.w-space{flex:6.75}
 
-/* ─── MACROPAD VISUAL ────────────────────────────── */
-.macropad-layout {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  gap: 20px;
-  align-items: start;
-}
+.pk-midi{border-color:rgba(41,217,194,.3)}.pk-midi:hover{border-color:var(--cyan)}
+.pk-sd{background:rgba(88,101,242,.1);border-color:rgba(88,101,242,.3)}.pk-sd:hover{background:rgba(88,101,242,.22);border-color:#5865F2}
+.pk-obs{background:rgba(60,50,90,.25);border-color:rgba(100,80,150,.3)}.pk-obs:hover{background:rgba(60,50,90,.45);border-color:#9060cc}
+.pk-mac{border-color:rgba(160,151,255,.3)}.pk-mac:hover{border-color:var(--accent2)}
+.pk-td{border-color:rgba(199,146,234,.3)}.pk-td:hover{border-color:var(--purple)}
+.pk-media{border-color:rgba(61,220,132,.3)}.pk-media:hover{border-color:var(--green)}
 
-.encoder-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-}
+.pksec{font-size:8.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:6px 0 3px;display:block}
+.pkgrid{display:flex;flex-wrap:wrap;gap:3px}
 
-.macropad-center { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.oled-mockup {
-  width: 100px;
-  height: 54px;
-  background: #0a1a0f;
-  border: 2px solid #1a3a1f;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  color: #3ddc84;
-  letter-spacing: 0.5px;
-}
+/* ── MIDI PICKER GROUPS & CC PANELS ── */
+.midi-group-box { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:8px; min-width:280px; flex:1 }
+.midi-group-title { font-size:10px; font-weight:700; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:.05em; display:flex; justify-content:space-between; align-items:center }
+.midi-group-container { display:flex; flex-wrap:wrap; gap:10px; padding-bottom:5px }
 
-.section-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: var(--text-muted);
-  margin-bottom: 6px;
-  text-align: center;
-}
+/* Professional CC Panel */
+.cc-panel { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; transition:.15s; }
+.cc-panel:hover { border-color: var(--border2); }
+.cc-header { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg3); border-bottom: 1px solid var(--border); }
+.cc-badge { background: rgba(41,217,194,0.15); color: var(--cyan); padding: 3px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.cc-name-inp { flex: 1; background: transparent; border: none; color: var(--text); font-size: 11px; font-weight: 600; outline: none; border-bottom: 1px dashed transparent; padding: 2px; }
+.cc-name-inp:focus { border-bottom-color: var(--accent); }
+.cc-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.cc-ctrl { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.cc-ctrl label { font-size: 8px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.cc-ctrl-row { display: flex; gap: 10px; }
+.cc-ctrl .cinp, .cc-ctrl .csel { width: 100%; font-size: 10px; padding: 5px 8px; border-color:var(--border2); background:var(--bg2) }
 
-.bank-selector {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  flex-wrap: wrap;
-}
-.bank-selector label { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
-.bank-select {
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 4px 8px;
-  border-radius: 5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  cursor: pointer;
-  flex: 1;
-  min-width: 130px;
-}
-.bank-select:focus { outline: none; border-color: var(--accent); }
+/* ── ADV VIEWS ── */
+.adv-area{flex:1;overflow-y:auto;padding:14px}
+.adv-inner{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+.adv-tip{font-size:10px;color:var(--muted2);background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:9px 12px;line-height:1.6}
+.adv-tip b{color:var(--accent2)}
 
-/* ─── KEY GRID ───────────────────────────────────── */
-.key-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 5px;
-}
+/* ── CARD ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:9px;overflow:hidden;margin-bottom:8px}
+.card-h{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.cid{width:28px;height:28px;border-radius:5px;display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0;font-family:'JetBrains Mono',monospace}
+.cid-m{background:rgba(124,108,255,.15);color:var(--accent2)}
+.cid-t{background:rgba(199,146,234,.15);color:var(--purple)}
+.cid-c{background:rgba(61,220,132,.15);color:var(--green)}
+.cid-a{background:rgba(245,166,35,.15);color:var(--amber)}
+.cid-s{background:rgba(88,101,242,.15);color:#7289da}
+.cid-mid{background:rgba(41,217,194,.15);color:var(--cyan)}
+.name-inp{background:transparent;border:none;color:var(--text);font-size:11px;font-weight:700;outline:none;padding:2px 0;border-bottom:1px solid transparent;transition:.1s;flex:1;min-width:0}
+.name-inp:focus{border-bottom-color:var(--accent)}
+.card-b{padding:10px 12px}
 
-.key-btn {
-  aspect-ratio: 1;
-  border-radius: 6px;
-  border: 1px solid var(--key-empty-border);
-  background: var(--key-empty);
-  color: var(--key-empty-text);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 8px;
-  cursor: pointer;
-  transition: all 0.12s;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  padding: 4px 2px;
-  min-height: 52px;
-  text-align: center;
-  line-height: 1.2;
-  position: relative;
-  overflow: hidden;
-}
-.key-btn:hover { transform: translateY(-2px); filter: brightness(1.3); }
-.key-btn:active { transform: translateY(0); }
-.key-btn .key-num {
-  font-size: 7px;
-  color: var(--text-muted);
-  position: absolute;
-  top: 3px;
-  left: 4px;
-}
-.key-btn .key-label {
-  font-size: 8px;
-  font-weight: 600;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding: 0 2px;
-}
-.key-btn .key-type {
-  font-size: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  opacity: 0.7;
-}
+/* ── SEQUENCE BOX ── */
+.seqbox{display:flex;flex-wrap:wrap;gap:4px;min-height:32px;background:var(--bg);padding:6px;border-radius:5px;border:1px dashed var(--border2);margin-bottom:7px;align-items:center;cursor:text}
+.seqbox:hover{border-color:var(--muted2)}
+.chip{display:inline-flex;align-items:center;gap:3px;padding:3px 6px;border-radius:4px;font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace}
+.chip-text{background:rgba(61,220,132,.1);color:var(--green);border:1px solid rgba(61,220,132,.2)}
+.chip-key{background:rgba(41,217,194,.1);color:var(--cyan);border:1px solid rgba(41,217,194,.2)}
+.chip-delay{background:rgba(245,166,35,.1);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
+.chip-del{cursor:pointer;color:var(--muted);margin-left:2px;font-size:10px;line-height:1}
+.chip-del:hover{color:var(--red)}
 
-.key-btn.type-hid { background: var(--key-hid); border-color: var(--key-hid-border); color: var(--key-hid-text); }
-.key-btn.type-midi { background: var(--key-midi); border-color: var(--key-midi-border); color: var(--key-midi-text); }
-.key-btn.type-media { background: var(--key-media); border-color: var(--key-media-border); color: var(--key-media-text); }
-.key-btn.type-daw { background: var(--key-daw); border-color: var(--key-daw-border); color: var(--key-daw-text); }
+/* ── FORM ROWS ── */
+.crow{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.csel,.cinp{background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:4px 7px;border-radius:5px;font-size:10px;outline:none;font-family:'DM Sans',sans-serif}
+.csel:focus,.cinp:focus{border-color:var(--accent)}
+.cinp{width:160px}
 
-/* ─── ENCODER KEYS ───────────────────────────────── */
-.encoder-section { display: flex; flex-direction: column; gap: 16px; }
-.encoder-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.enc-key {
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  padding: 10px;
-  cursor: pointer;
-  transition: all 0.12s;
-  text-align: center;
-}
-.enc-key:hover { border-color: var(--border-hi); background: var(--bg3); transform: translateY(-2px); }
-.enc-key .enc-name { font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
-.enc-key .enc-action { font-size: 11px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.enc-key .enc-mode { font-size: 8px; color: var(--text-muted); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
-.enc-key.type-hid { border-color: var(--key-hid-border); }
-.enc-key.type-midi { border-color: var(--key-midi-border); }
-.enc-disc {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid var(--border);
-  background: var(--bg3);
-  margin: 0 auto 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  color: var(--text-muted);
-}
+/* ── TAP DANCE GRID ── */
+.td-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.td-cell{background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:8px 10px}
+.td-cell label{display:block;font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.td-val{font-size:10px;font-weight:700;color:var(--accent2);cursor:pointer;padding:4px 7px;border-radius:4px;background:rgba(124,108,255,.07);border:1px dashed rgba(124,108,255,.3);transition:.1s;min-height:28px;display:flex;align-items:center}
+.td-val:hover{background:rgba(124,108,255,.14);border-color:var(--accent)}
+.td-empty{color:var(--muted);font-style:italic;font-size:9px}
 
-/* ─── KEY PICKER MODAL ───────────────────────────── */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.85);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
-  backdrop-filter: blur(4px);
-}
-.modal-overlay.open { opacity: 1; pointer-events: all; }
+/* ── COMBOS ── */
+.combo-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.cslot{width:40px;height:40px;background:var(--bg);border:1px dashed var(--border2);border-radius:5px;display:grid;place-items:center;font-size:10px;font-weight:700;color:var(--muted2);cursor:pointer;transition:.1s}
+.cslot:hover{border-color:var(--green);color:var(--green)}
+.cslot.has{background:rgba(61,220,132,.07);border-color:var(--green);color:var(--text);border-style:solid}
+.carrow{color:var(--muted);font-size:14px}
+.caslot{padding:4px 10px;height:40px;background:rgba(61,220,132,.07);border:1px solid var(--green);border-radius:5px;font-size:10px;font-weight:700;color:var(--green);cursor:pointer;display:flex;align-items:center;gap:4px;min-width:80px;transition:.1s}
+.caslot:hover{background:rgba(61,220,132,.14)}
 
-.modal {
-  background: var(--bg1);
-  border: 1px solid var(--border-hi);
-  border-radius: 12px;
-  width: 100%;
-  max-width: 680px;
-  max-height: 85vh;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  transform: scale(0.95) translateY(10px);
-  transition: transform 0.2s;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
-}
-.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+/* ── ALT REPEAT ── */
+.ar-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ar-rule{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:10px 12px}
+.ar-fs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:7px 0}
+.ar-f label{display:block;font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px}
+.ar-f .cinp{width:100%}
+.arcr{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.arck{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted2);cursor:pointer}
+.arck input{accent-color:var(--accent)}
 
-.modal-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.modal-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
-.modal-subtitle { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.modal-close {
-  width: 28px; height: 28px;
-  border-radius: 6px;
-  background: var(--bg3);
-  border: 1px solid var(--border);
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.1s;
-}
-.modal-close:hover { color: var(--text); border-color: var(--border-hi); }
+/* ── LED ── */
+.led-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.led-card{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:12px}
+.led-card h4{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.lr{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.lr label{font-size:9px;color:var(--muted2);width:75px;flex-shrink:0}
+.lr input[type=range]{flex:1;accent-color:var(--accent)}
+.lr .lv{font-size:9px;font-weight:700;color:var(--accent2);min-width:32px;text-align:right}
+.mbtns{display:flex;gap:4px}
+.mbtn{flex:1;padding:5px;border:1px solid var(--border2);border-radius:4px;background:var(--bg3);color:var(--muted2);font-size:9px;font-weight:700;cursor:pointer;transition:.1s}
+.mbtn.on{background:rgba(124,108,255,.15);border-color:var(--accent);color:var(--accent2)}
 
-.modal-tabs {
-  display: flex;
-  padding: 0 20px;
-  border-bottom: 1px solid var(--border);
-  gap: 0;
-  overflow-x: auto;
-}
-.modal-tab {
-  padding: 10px 14px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  white-space: nowrap;
-  transition: all 0.15s;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-.modal-tab:hover { color: var(--text); }
-.modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+/* ── STREAM EDITOR ── */
+.stream-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.stream-app{background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.stream-app-h{display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--bg3);border-bottom:1px solid var(--border)}
+.stream-app-ico{width:24px;height:24px;border-radius:4px;display:grid;place-items:center;font-size:12px;flex-shrink:0}
+.stream-app-b{padding:8px 10px;display:flex;flex-direction:column;gap:4px}
+.stream-action{display:flex;align-items:center;gap:6px;padding:5px 7px;background:var(--bg);border:1px solid var(--border);border-radius:5px;cursor:pointer;transition:.1s}
+.stream-action:hover{border-color:var(--border2);background:var(--bg3)}
+.sa-key{font-size:9px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--muted2);width:32px;flex-shrink:0}
+.sa-name{font-size:10px;font-weight:600;flex:1}
+.sa-edit{font-size:9px;color:var(--muted);cursor:pointer}
+.sa-edit:hover{color:var(--accent2)}
 
-.modal-body { flex: 1; overflow-y: auto; padding: 16px 20px; }
-.modal-footer {
-  padding: 12px 20px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-}
+/* ── MIDI EDITOR ── */
+.midi-grid{display:grid;grid-template-columns:1fr;gap:10px}
+.midi-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;max-height:65vh;overflow-y:auto}
+.midi-card h4{font-size:9px;font-weight:700;color:var(--text);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.midi-octave-row{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-bottom:3px}
+.midi-note{height:38px;border-radius:4px;border:1px solid var(--border2);background:var(--bg3);cursor:pointer;font-size:10px;font-weight:700;color:var(--text);display:grid;place-items:center;transition:.1s;line-height:1.1}
+.midi-note:hover{border-color:var(--cyan);background:rgba(41,217,194,.1);color:var(--cyan)}
+.midi-note.sel{border-color:var(--accent);background:rgba(124,108,255,.15);color:var(--accent2)}
+.midi-note.sharp{background:var(--bg4);color:var(--muted2)}
+.midi-note.sharp:hover{border-color:var(--cyan);background:rgba(41,217,194,.1);color:var(--cyan)}
+.midi-ch-sel{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.midi-ch-sel label{font-size:9px;color:var(--muted2)}
 
-/* ─── KEY PICKER CATEGORIES ──────────────────────── */
-.key-picker-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-  gap: 6px;
-}
-.picker-key {
-  padding: 8px 6px;
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  background: var(--bg2);
-  color: var(--text-dim);
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.1s;
-  line-height: 1.3;
-}
-.picker-key:hover { border-color: var(--accent); color: var(--text); background: var(--bg3); }
-.picker-key.selected { border-color: var(--accent); background: var(--accent-dim); color: #fff; }
+/* ── SECTION TOOLBAR ── */
+.sec-toolbar{display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.sec-toolbar h3{font-size:12px;font-weight:700;flex:1}
 
-/* MIDI picker */
-.midi-note-picker { display: flex; flex-direction: column; gap: 12px; }
-.midi-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.midi-row label { font-size: 11px; color: var(--text-dim); min-width: 60px; }
-.midi-input {
-  background: var(--bg3); border: 1px solid var(--border);
-  color: var(--text); padding: 6px 10px; border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace; font-size: 12px;
-  width: 80px;
-}
-.midi-input:focus { outline: none; border-color: var(--accent); }
-.piano-row { display: flex; gap: 2px; margin: 8px 0; }
-.piano-key {
-  width: 24px; height: 56px; border-radius: 0 0 4px 4px;
-  border: 1px solid #333; background: #e8e8e8; cursor: pointer;
-  transition: background 0.1s; position: relative;
-}
-.piano-key:hover { background: var(--accent); }
-.piano-key.black {
-  background: #1a1a1a; height: 36px; width: 16px;
-  margin: 0 -8px; z-index: 1; border-radius: 0 0 3px 3px;
-}
-.piano-key.black:hover { background: var(--accent); }
-.piano-key.selected { background: var(--accent) !important; }
-.piano-note-label { font-size: 7px; color: #666; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); }
+/* ── MODAL ── */
+#mo{display:none;position:fixed;inset:0;background:rgba(5,5,14,.85);z-index:9000;align-items:center;justify-content:center}
+#mo.on{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:20px;min-width:300px;max-width:440px;width:90vw}
+.modal h3{font-size:13px;font-weight:700;margin-bottom:9px}
+.modal p{font-size:10px;color:var(--muted2);margin-bottom:11px;line-height:1.6}
+.minp{width:100%;background:var(--bg);border:1px solid var(--border2);color:var(--text);padding:7px 9px;border-radius:5px;font-size:12px;outline:none;margin-bottom:10px;font-family:'DM Sans',sans-serif}
+.minp:focus{border-color:var(--accent)}
+.mbtns2{display:flex;gap:6px;justify-content:flex-end}
 
-/* CC picker */
-.cc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; }
-.cc-item {
-  padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);
-  background: var(--bg2); cursor: pointer; transition: all 0.1s;
-}
-.cc-item:hover { border-color: var(--key-midi-border); }
-.cc-item.selected { border-color: var(--key-midi-border); background: var(--key-midi); }
-.cc-num { font-size: 9px; color: var(--text-muted); }
-.cc-name { font-size: 10px; color: var(--key-midi-text); font-weight: 600; }
-
-/* Search */
-.search-box {
-  width: 100%; background: var(--bg3); border: 1px solid var(--border);
-  color: var(--text); padding: 8px 12px; border-radius: 6px;
-  font-family: 'JetBrains Mono', monospace; font-size: 12px;
-  margin-bottom: 12px;
-}
-.search-box:focus { outline: none; border-color: var(--accent); }
-.search-box::placeholder { color: var(--text-muted); }
-
-/* ─── STATUS BAR ──────────────────────────────────── */
-.statusbar {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--bg1); border-top: 1px solid var(--border);
-  padding: 6px 24px;
-  display: flex; align-items: center; gap: 16px;
-  font-size: 10px; color: var(--text-dim);
-  z-index: 99;
-}
-.status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-.status-dot.red { background: var(--red); }
-.status-dot.green { background: var(--green); }
-.status-dot.orange { background: var(--orange); }
-#status-text { color: var(--text-dim); }
-.status-right { margin-left: auto; display: flex; gap: 12px; }
-
-/* ─── EXPORT/IMPORT ──────────────────────────────── */
-.io-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-
-/* ─── FIRMWARE PROTOCOL INFO ─────────────────────── */
-.protocol-box {
-  background: var(--bg0); border: 1px solid var(--border);
-  border-radius: 6px; padding: 12px 14px; font-size: 10px;
-  color: var(--text-dim); line-height: 1.8;
-  font-family: 'JetBrains Mono', monospace;
-}
-.protocol-box span { color: var(--green); }
-.protocol-box em { color: var(--accent); font-style: normal; }
-
-/* ─── RESPONSIVE ─────────────────────────────────── */
-@media (max-width: 768px) {
-  .macropad-layout { grid-template-columns: 1fr; }
-  .encoder-row { grid-template-columns: repeat(2, 1fr); }
-  .main { padding: 14px; }
-}
-
-/* ─── SCROLLBAR ──────────────────────────────────── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--bg0); }
-::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 99px; }
-
-/* ─── NO WEBSERIAL NOTICE ────────────────────────── */
-.no-serial-notice {
-  background: rgba(255,159,67,0.08);
-  border: 1px solid rgba(255,159,67,0.25);
-  border-radius: 8px;
-  padding: 14px 18px;
-  font-size: 11px;
-  color: var(--orange);
-  margin-bottom: 16px;
-  line-height: 1.6;
-}
-.no-serial-notice strong { display: block; margin-bottom: 4px; font-size: 12px; }
-
-/* ─── TOAST ──────────────────────────────────────── */
-.toast-container { position: fixed; top: 70px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-.toast {
-  background: var(--bg2); border: 1px solid var(--border-hi);
-  border-radius: 8px; padding: 10px 16px;
-  font-size: 12px; color: var(--text);
-  transform: translateX(120%); transition: transform 0.3s;
-  max-width: 280px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-.toast.show { transform: translateX(0); }
-.toast.success { border-left: 3px solid var(--green); }
-.toast.error { border-left: 3px solid var(--red); }
-.toast.info { border-left: 3px solid var(--accent); }
+/* ── TOAST ── */
+#toast-c{position:fixed;top:52px;right:12px;display:flex;flex-direction:column;gap:4px;z-index:9999;pointer-events:none}
+.toast{background:var(--bg3);border:1px solid var(--border2);border-left:3px solid var(--accent);border-radius:5px;padding:8px 12px;font-size:10px;color:var(--text);transform:translateX(115%);transition:transform .2s cubic-bezier(.34,1.56,.64,1);pointer-events:auto;max-width:280px}
+.toast.in{transform:translateX(0)}
+.toast.ok{border-left-color:var(--green)}
+.toast.err{border-left-color:var(--red)}
+.toast.warn{border-left-color:var(--amber)}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-logo">
-    <div class="logo-icon">🎛</div>
-    <div>
-      <h1>MacroPad <span>Config</span></h1>
-    </div>
+<!-- TOPBAR -->
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-mark">MP</div>
+    <div><div class="logo-name">MacroPad Studio</div><div class="logo-sub">ESP32-S3 Configurator</div></div>
   </div>
-  <div class="header-right">
-    <span id="conn-badge" class="badge badge-disconnected">● Disconnected</span>
-    <button class="btn btn-secondary btn-sm" onclick="importJSON()">Import JSON</button>
-    <button class="btn btn-secondary btn-sm" onclick="exportJSON()">Export JSON</button>
-    <button class="btn btn-primary" id="connect-btn" onclick="toggleConnect()">Connect USB</button>
-  </div>
-</div>
-
-<!-- PRESET BAR -->
-<div class="preset-bar">
-  <label>PRESET:</label>
-  <div id="preset-tabs" style="display:flex;gap:6px;align-items:center;"></div>
-  <div class="preset-bar-divider"></div>
-  <div class="preset-bar-right">
-    <button class="btn btn-secondary btn-sm" onclick="addPreset()">+ New</button>
-    <button class="btn btn-danger btn-sm" onclick="deletePreset()">Delete</button>
-    <div class="preset-bar-divider"></div>
-    <button class="btn btn-success btn-sm" id="save-btn" onclick="saveToDevice()" disabled>↑ Save to Device</button>
-  </div>
-</div>
-
-<!-- MAIN -->
-<div class="main" style="padding-bottom: 50px;">
-
-  <!-- NO WEBSERIAL NOTICE -->
-  <div class="no-serial-notice" id="no-serial-notice" style="display:none;">
-    <strong>⚠ WebSerial Not Available</strong>
-    WebSerial API requires Google Chrome / Microsoft Edge on desktop. Firefox & Safari are not supported.
-    You can still edit and export config as JSON file, then load it manually onto the SD card.
-  </div>
-
-  <!-- LAYOUT: ENCODERS TOP ROW -->
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Rotary Encoders</span>
-      <div class="bank-selector">
-        <label>Bank:</label>
-        <select class="bank-select" id="enc-bank" onchange="onEncBankChange()">
-          <option value="0">1. Vol & Mix</option>
-          <option value="1">2. Synth</option>
-          <option value="2">3. Mod & FX</option>
-          <option value="3">4. EQ Ctrl</option>
-          <option value="4">5. DAW Nav</option>
-          <option value="5">6. Mixer</option>
-          <option value="6">7. Scroll</option>
-          <option value="7">8. CC Free</option>
-          <option value="8">9. Custom</option>
-        </select>
-        <button class="btn btn-secondary btn-sm" onclick="editEncBank()">Edit Bank</button>
-      </div>
-    </div>
-    <div class="card-body">
-      <div id="encoder-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:600px;margin:0 auto;"></div>
-    </div>
-  </div>
-
-  <!-- LAYOUT: PADS + MATRIX -->
-  <div class="card">
-    <div class="card-header">
-      <span class="card-title">Touch Pads & Matrix Keypad</span>
-    </div>
-    <div class="card-body">
-      <div class="macropad-layout">
-
-        <!-- PAD LEFT -->
-        <div>
-          <div class="section-label">Touch Pad Kiri (TTP229)</div>
-          <div class="bank-selector">
-            <label>Bank:</label>
-            <select class="bank-select" id="padl-bank" onchange="onBankChange('padL')">
-              <option value="0">1. Drum Kit</option>
-              <option value="1">2. Chromatic</option>
-              <option value="2">3. DAW Ctrl</option>
-              <option value="3">4. Media</option>
-              <option value="4">5. Shortcut</option>
-              <option value="5">6. MIDI CC</option>
-              <option value="6">7. Numpad</option>
-              <option value="7">8. Browser</option>
-              <option value="8">9. Custom</option>
-            </select>
-            <button class="btn btn-secondary btn-sm" onclick="editBank('padL')">Edit</button>
-          </div>
-          <div class="key-grid" id="padl-grid"></div>
-        </div>
-
-        <!-- MATRIX -->
-        <div>
-          <div class="section-label">Matrix 4×4</div>
-          <div class="bank-selector">
-            <label>Bank:</label>
-            <select class="bank-select" id="mat-bank" onchange="onBankChange('mat')">
-              <option value="0">1. Drum Kit</option>
-              <option value="1">2. Chromatic</option>
-              <option value="2">3. DAW Ctrl</option>
-              <option value="3">4. Media</option>
-              <option value="4">5. Shortcut</option>
-              <option value="5">6. MIDI CC</option>
-              <option value="6">7. Numpad</option>
-              <option value="7">8. Browser</option>
-              <option value="8">9. Custom</option>
-            </select>
-            <button class="btn btn-secondary btn-sm" onclick="editBank('mat')">Edit</button>
-          </div>
-          <div class="key-grid" id="mat-grid"></div>
-        </div>
-
-        <!-- PAD RIGHT -->
-        <div>
-          <div class="section-label">Touch Pad Kanan (TTP229)</div>
-          <div class="bank-selector">
-            <label>Bank:</label>
-            <select class="bank-select" id="padr-bank" onchange="onBankChange('padR')">
-              <option value="0">1. Drum Kit</option>
-              <option value="1">2. Chromatic</option>
-              <option value="2">3. DAW Ctrl</option>
-              <option value="3">4. Media</option>
-              <option value="4">5. Shortcut</option>
-              <option value="5">6. MIDI CC</option>
-              <option value="6">7. Numpad</option>
-              <option value="7">8. Browser</option>
-              <option value="8">9. Custom</option>
-            </select>
-            <button class="btn btn-secondary btn-sm" onclick="editBank('padR')">Edit</button>
-          </div>
-          <div class="key-grid" id="padr-grid"></div>
-        </div>
-
-      </div><!-- end macropad-layout -->
-    </div>
-  </div>
-
-  <!-- DEVICE INFO -->
-  <div class="card">
-    <div class="card-header"><span class="card-title">Serial Protocol Info</span></div>
-    <div class="card-body">
-      <p style="font-size:11px;color:var(--text-dim);margin-bottom:10px;">
-        Add these handlers to your firmware's <code style="color:var(--accent);">handleSerialCommands()</code> in diagnostics.ino:
-      </p>
-      <div class="protocol-box">
-        <span>WCFG:PING</span>     → respond <em>WCFG:PONG:MacroPad_v1.0</em><br>
-        <span>WCFG:GET</span>      → respond <em>WCFG:CONFIG:{json}</em><br>
-        <span>WCFG:SET:{json}</span> → save config, respond <em>WCFG:OK</em><br>
-        <span>WCFG:SAVE</span>     → write SD card, respond <em>WCFG:SAVED</em><br>
-        <span>WCFG:PRESETS</span>  → respond <em>WCFG:PRESETS:{json}</em>
-      </div>
-      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-secondary btn-sm" onclick="pingDevice()">Ping Device</button>
-        <button class="btn btn-secondary btn-sm" onclick="getDeviceConfig()">Get Config</button>
-        <button class="btn btn-secondary btn-sm" onclick="copyFirmwarePatch()">Copy Firmware Patch</button>
-      </div>
-    </div>
-  </div>
-
-</div><!-- end main -->
-
-<!-- STATUS BAR -->
-<div class="statusbar">
-  <div class="status-dot" id="status-dot" style="background:var(--red)"></div>
-  <span id="status-text">Not connected — WebSerial ready</span>
-  <div class="status-right">
-    <span id="status-modified" style="display:none;color:var(--orange)">● Unsaved changes</span>
-    <span style="color:var(--text-muted)">MacroPad Configurator v1.0</span>
+  <button class="ntab on" id="ntab-keymap">Keymap</button>
+  <button class="ntab" id="ntab-macros">Macros</button>
+  <button class="ntab" id="ntab-tapdance">Tap-Dance</button>
+  <button class="ntab" id="ntab-combos">Combos</button>
+  <button class="ntab" id="ntab-altrepeat">Alt Repeat</button>
+  <button class="ntab" id="ntab-midinote">MIDI Note</button>
+  <button class="ntab" id="ntab-midicc">MIDI CC</button>
+  <button class="ntab" id="ntab-stream">Stream</button>
+  <button class="ntab" id="ntab-led">LED</button>
+  <div class="sep"></div>
+  <div class="tbr">
+    <button class="btn" id="btn-undo" disabled>↶</button>
+    <button class="btn" id="btn-redo" disabled>↷</button>
+    <div class="sep"></div>
+    <button class="btn" id="btn-import">↑ Import</button>
+    <button class="btn" id="btn-export">↓ Export</button>
+    <div class="sep"></div>
+    <div class="dot" id="cdot"></div>
+    <button class="btn" id="btn-conn">Connect</button>
+    <button class="btn btn-accent" id="btn-save" disabled>Save ↑</button>
   </div>
 </div>
 
-<!-- TOAST CONTAINER -->
-<div class="toast-container" id="toast-container"></div>
+<div id="main">
+  <div id="workspaces">
 
-<!-- KEY PICKER MODAL -->
-<div class="modal-overlay" id="key-modal">
+    <!-- ═══ KEYMAP ═══ -->
+    <div class="ws on" id="ws-keymap">
+      <div id="pbar">
+        <span class="pbar-label">Preset:</span>
+        <div id="preset-list"></div>
+        <button class="btn btn-green" id="btn-add-preset" style="padding:2px 8px;font-size:9px">+ Add</button>
+        <button class="btn" id="btn-rename-preset" style="padding:2px 8px;font-size:9px">✎ Rename</button>
+        <button class="btn btn-red" id="btn-del-preset" style="padding:2px 8px;font-size:9px">✕ Del</button>
+        <div id="status-msg">Klik tombol → pilih aksi di bawah</div>
+      </div>
+      <div id="layout-area">
+        <div class="board">
+          <div class="enc-row">
+            <div class="enc-group"><span class="enc-lbl">Encoder 1</span>
+              <div class="key enc-k" id="k-enc-0-ccw"></div>
+              <div class="key enc-k" id="k-enc-0-clk"></div>
+              <div class="key enc-k" id="k-enc-0-cw"></div>
+            </div>
+            <div class="enc-group"><span class="enc-lbl">Encoder 2</span>
+              <div class="key enc-k" id="k-enc-1-ccw"></div>
+              <div class="key enc-k" id="k-enc-1-clk"></div>
+              <div class="key enc-k" id="k-enc-1-cw"></div>
+            </div>
+            <div class="oled-col">
+              <div class="oled"><span id="oled-name">MacroPad</span><span class="oled-sub" id="oled-sub">Preset 1</span></div>
+              <div class="bank-row" style="width:148px">
+                <select class="bsel" id="sel-enc"></select>
+                <div class="bico" id="bico-enc-rename" title="Rename">✎</div>
+                <div class="bico rd" id="bico-enc-del" title="Hapus">⊗</div>
+              </div>
+              <button class="btn btn-green" id="btn-add-enc-bank" style="width:148px;justify-content:center;font-size:9px;padding:2px">+ Bank Baru</button>
+            </div>
+            <div class="enc-group"><span class="enc-lbl">Encoder 3</span>
+              <div class="key enc-k" id="k-enc-2-ccw"></div>
+              <div class="key enc-k" id="k-enc-2-clk"></div>
+              <div class="key enc-k" id="k-enc-2-cw"></div>
+            </div>
+            <div class="enc-group"><span class="enc-lbl">Encoder 4</span>
+              <div class="key enc-k" id="k-enc-3-ccw"></div>
+              <div class="key enc-k" id="k-enc-3-clk"></div>
+              <div class="key enc-k" id="k-enc-3-cw"></div>
+            </div>
+          </div>
+          <div class="panels-row">
+            <div class="panel-col">
+              <div class="bank-row">
+                <select class="bsel" id="sel-padl"></select>
+                <div class="bico" id="bico-padl-rename">✎</div>
+                <div class="bico rd" id="bico-padl-del">⊗</div>
+              </div>
+              <button class="btn btn-green" id="btn-add-padl-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
+              <div class="grid4" id="grid-padl"></div>
+            </div>
+            <div class="panel-col">
+              <div class="bank-row">
+                <select class="bsel" id="sel-mat"></select>
+                <div class="bico" id="bico-mat-rename">✎</div>
+                <div class="bico rd" id="bico-mat-del">⊗</div>
+              </div>
+              <button class="btn btn-green" id="btn-add-mat-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
+              <div class="grid4" id="grid-mat"></div>
+            </div>
+            <div class="panel-col">
+              <div class="bank-row">
+                <select class="bsel" id="sel-padr"></select>
+                <div class="bico" id="bico-padr-rename">✎</div>
+                <div class="bico rd" id="bico-padr-del">⊗</div>
+              </div>
+              <button class="btn btn-green" id="btn-add-padr-bank" style="justify-content:center;font-size:9px;padding:2px 5px">+ Bank</button>
+              <div class="grid4" id="grid-padr"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ MACROS ═══ -->
+    <div class="ws" id="ws-macros">
+      <div class="adv-area"><div class="adv-inner">
+        <div class="adv-tip"><b>Macro Editor</b> — Urutan keystroke + delay. Pilih type, isi value, klik "+ Add". Pilih "Virtual Action" untuk assign fungsionalitas khusus dari picker di bawah.</div>
+        <div class="sec-toolbar">
+          <h3>Macros</h3>
+          <button class="btn btn-green" id="btn-add-macro">+ Tambah Macro</button>
+        </div>
+        <div id="macro-container"></div>
+      </div></div>
+    </div>
+
+    <!-- ═══ TAP-DANCE ═══ -->
+    <div class="ws" id="ws-tapdance">
+      <div class="adv-area"><div class="adv-inner">
+        <div class="adv-tip"><b>Tap-Dance</b> — 1 tombol, 4 fungsi. Klik slot (hingga menyala ungu), lalu pilih aksi dari <b>Virtual Keyboard</b> di bawah.</div>
+        <div class="sec-toolbar">
+          <h3>Tap-Dance Entries</h3>
+          <button class="btn btn-green" id="btn-add-td">+ Tambah</button>
+        </div>
+        <div id="td-container"></div>
+      </div></div>
+    </div>
+
+    <!-- ═══ COMBOS ═══ -->
+    <div class="ws" id="ws-combos">
+      <div class="adv-area"><div class="adv-inner">
+        <div class="adv-tip"><b>Combos</b> — Tekan 2–4 tombol bersamaan → aksi khusus. Klik slot K1–K4 atau Output, lalu pilih input langsung dari <b>Virtual Keyboard</b> di bawah (tanpa perlu modal).</div>
+        <div class="sec-toolbar">
+          <h3>Combo Entries</h3>
+          <button class="btn btn-green" id="btn-add-combo">+ Tambah</button>
+        </div>
+        <div id="combos-container"></div>
+      </div></div>
+    </div>
+
+    <!-- ═══ ALT REPEAT ═══ -->
+    <div class="ws" id="ws-altrepeat">
+      <div class="adv-area"><div class="adv-inner">
+        <div class="adv-tip"><b>Alt Repeat Key</b> — Tombol bergantung pada key terakhir. Contoh: Ctrl+Z → Alt Repeat jadi Ctrl+Y. Tekan tombol fisik langsung di field Last Key / Alt Key.</div>
+        <div class="sec-toolbar">
+          <h3>Alt Repeat Rules</h3>
+          <button class="btn btn-green" id="btn-add-ar">+ Tambah Rule</button>
+        </div>
+        <div id="ar-container"></div>
+      </div></div>
+    </div>
+
+    <!-- ═══ MIDI NOTE ═══ -->
+    <div class="ws" id="ws-midinote">
+      <div class="adv-area"><div class="adv-inner">
+        <div class="adv-tip"><b>MIDI Note Configuration (C2–C4)</b> — Atur properti kustom pada note (seperti Custom Name, Override Velocity, & Transpose). Pilih note di Grid untuk mengeditnya.</div>
+        <div id="midinote-container"></div>
+      </div></div>
+    </div>
+
+    <!-- ═══ MIDI CC ═══ -->
+    <div class="ws" id="ws-midicc">
+      <div class="adv-area"><div class="adv-inner">
+        <div class="adv-tip"><b>MIDI CC Configuration</b> — Konfigurasi Mode (Momentary/Toggle), Off/On Value dan Assign Control Change (CC).</div>
+        <div class="sec-toolbar">
+          <h3>Control Change (CC)</h3>
+          <button class="btn btn-green" id="btn-add-cc-top">+ Tambah CC</button>
+        </div>
+        <div id="midicc-container"></div>
+      </div></div>
+    </div>
+
+    <!-- ═══ STREAM ═══ -->
+    <div class="ws" id="ws-stream">
+      <div class="adv-area"><div class="adv-inner">
+        <div class="adv-tip"><b>Stream Deck Actions</b> — Petakan F13–F24 ke aplikasi seperti OBS, Discord, Spotify. Tambah aplikasi custom dan atur nama aksi per hotkey. Klik nama aksi untuk rename.</div>
+        <div class="sec-toolbar">
+          <h3>Stream Apps</h3>
+          <button class="btn btn-green" id="btn-add-stream-app">+ Tambah App</button>
+        </div>
+        <div id="stream-container"></div>
+      </div></div>
+    </div>
+
+    <!-- ═══ LED ═══ -->
+    <div class="ws" id="ws-led">
+      <div class="adv-area"><div class="adv-inner">
+        <div class="adv-tip"><b>LED WS2811</b> — Konfigurasi strip LED. Mode Responsive menyalakan LED saat tombol ditekan.</div>
+        <div id="led-container"></div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ═══ PICKER GLOBAL ═══ -->
+  <div id="picker">
+    <div id="ptabs">
+      <div class="ptab on" id="ptab-basic">Keys</div>
+      <div class="ptab" id="ptab-media">Media</div>
+      <div class="ptab" id="ptab-stream">Stream</div>
+      <div class="ptab" id="ptab-midinote">MIDI Note</div>
+      <div class="ptab" id="ptab-midicc">MIDI CC</div>
+      <div class="ptab" id="ptab-macro">Macros</div>
+      <div class="ptab" id="ptab-td">Tap-Dance</div>
+      <div class="ptab" id="ptab-combo">Combos</div>
+      <div class="ptab" id="ptab-altrep">Alt Repeat</div>
+      <div class="ptab" id="ptab-ledcfg">LED</div>
+      <div class="ptabs-r">
+        <button class="btn btn-red" id="btn-clear-key" style="font-size:10px;padding:3px 8px">Clear</button>
+        <button class="btn btn-accent" id="btn-save2" disabled style="font-size:10px;padding:3px 8px">Save ↑</button>
+      </div>
+    </div>
+    <div id="pbody">
+      <div class="pb on" id="pb-basic"><div class="kbd-section" id="pk-basic"></div></div>
+      <div class="pb" id="pb-media"><div class="pkgrid" id="pk-media"></div></div>
+      <div class="pb" id="pb-stream"><div class="pkgrid" id="pk-stream"></div></div>
+      <div class="pb" id="pb-midinote"><div id="pk-midinote"></div></div>
+      <div class="pb" id="pb-midicc"><div class="pkgrid" id="pk-midicc"></div></div>
+      <div class="pb" id="pb-macro"><div class="pkgrid" id="pk-macro"></div></div>
+      <div class="pb" id="pb-td"><div class="pkgrid" id="pk-td"></div></div>
+      <div class="pb" id="pb-combo"><div class="pkgrid" id="pk-combo"></div></div>
+      <div class="pb" id="pb-altrep"><div class="pkgrid" id="pk-altrep"></div></div>
+      <div class="pb" id="pb-ledcfg"><div class="pkgrid" id="pk-ledcfg"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL (Hanya tersisa untuk input Text string tertentu jika sangat dibutuhkan) -->
+<div id="mo">
   <div class="modal">
-    <div class="modal-header">
-      <div>
-        <div class="modal-title" id="modal-title">Assign Key</div>
-        <div class="modal-subtitle" id="modal-subtitle">Select an action for this key</div>
-      </div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
-    <div class="modal-tabs">
-      <div class="modal-tab active" onclick="switchTab('basic',this)">Basic Keys</div>
-      <div class="modal-tab" onclick="switchTab('combos',this)">Shortcuts</div>
-      <div class="modal-tab" onclick="switchTab('media',this)">Media</div>
-      <div class="modal-tab" onclick="switchTab('midi_note',this)">MIDI Note</div>
-      <div class="modal-tab" onclick="switchTab('midi_cc',this)">MIDI CC</div>
-      <div class="modal-tab" onclick="switchTab('daw',this)">DAW</div>
-      <div class="modal-tab" onclick="switchTab('custom',this)">Custom</div>
-    </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="clearKey()">Clear</button>
-      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="confirmKey()">Assign Key</button>
+    <h3 id="mo-title">Input</h3>
+    <p id="mo-desc"></p>
+    <input type="text" class="minp" id="mo-inp">
+    <div class="mbtns2">
+      <button class="btn" id="mo-cancel">Batal</button>
+      <button class="btn btn-accent" id="mo-ok">OK</button>
     </div>
   </div>
 </div>
 
-<input type="file" id="import-input" accept=".json" style="display:none" onchange="handleImport(event)">
+<div id="toast-c"></div>
+<input type="file" id="file-import" accept=".json" style="display:none">
 
 <script>
-// ═══════════════════════════════════════════════════════
-//  MACROPAD CONFIGURATOR — JavaScript Engine
-// ═══════════════════════════════════════════════════════
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function noteN(n){return['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][n%12]+(Math.floor(n/12)-1)}
 
-// ─── WebSerial ─────────────────────────────────────────
-let port = null, reader = null, writer = null;
-let serialBuffer = '';
-const hasSerial = 'serial' in navigator;
+// ══════════════════════════════════════════
+// STATE & CONFIG
+// ══════════════════════════════════════════
+var BN={mat:['Drum Kit','Chromatic','DAW Ctrl','Media','Shortcut','MIDI CC','Numpad','Browser'],padL:['Drum Kit','Chromatic','DAW Ctrl','Media','Shortcut','MIDI CC','Numpad','Browser'],padR:['Drum Kit','Chromatic','DAW Ctrl','Media','Shortcut','MIDI CC','Numpad','Browser'],enc:['Vol & Mix','Synth','Mod & FX','EQ Ctrl','DAW Nav','Mixer','Scroll','CC Free']};
 
-if (!hasSerial) document.getElementById('no-serial-notice').style.display = 'block';
+var MAT=[
+  [36,38,42,46,49,51,41,43,45,47,37,39,56,54,60,62].map(function(n,i){return{t:'midi',s:'note',n:n,l:['Kick','Snare','HiHat','OpenHH','Crash','Ride','Tom1','Tom2','Tom3','Tom4','Rim','Clap','Cowbell','Tamb','HiBng','LoBng'][i]}}),
+  Array.from({length:16},function(_,i){return{t:'midi',s:'note',n:48+i,l:noteN(48+i)}}),
+  ['Play','Stop','Rec','Loop','Undo','Redo','Save','Metro','Marker','Quant','Arm','Solo','Mute','Bounce','Export','Tap'].map(function(l){return{t:'hid',l:l}}),
+  ['Play/P','Next','Prev','Stop','Vol+','Vol-','Mute','PrtScr','Zoom+','Zoom-','Full','Home','End','PgUp','PgDn','Esc'].map(function(l){return{t:'media',l:l}}),
+  ['Cut','Copy','Paste','Undo','Redo','Sel All','Find','Save','New','Close','Bold','Italic','Underl','Z+','Z-','Z0'].map(function(l){return{t:'hid',l:l}}),
+  ['Sus ON','Sus OFF','Sos ON','Sos OFF','Soft ON','Soft OFF','Mod 0','Mod 64','Mod 127','Pan Ctr','CC Rst','PANIC','CC80','CC81','CC82','CC83'].map(function(l){return{t:'midi',s:'cc',l:l}}),
+  '789/456*123-0.+='.split('').map(function(k){return{t:'hid',l:k==='+'?'Ent':(k==='='?'+':k)}}),
+  ['Back','Fwd','Reload','New Tab','Close','Reopen','NextTb','PrevTb','Find','DevTool','Z+','Z-','Z0','Home','End','Full'].map(function(l){return{t:'hid',l:l}})
+];
 
-// ─── State ─────────────────────────────────────────────
-let config = {
-  presets: [
-    { name:"Preset 1", encBank:0, matBank:2, padLBank:0, padRBank:4, usbMode:0, midiCh:1 },
-    { name:"Preset 2", encBank:1, matBank:0, padLBank:5, padRBank:4, usbMode:0, midiCh:1 },
-    { name:"Preset 3", encBank:2, matBank:1, padLBank:0, padRBank:3, usbMode:1, midiCh:1 },
-    { name:"Preset 4", encBank:4, matBank:2, padLBank:1, padRBank:4, usbMode:0, midiCh:1 },
-    { name:"Preset 5", encBank:0, matBank:4, padLBank:2, padRBank:5, usbMode:1, midiCh:2 },
-    { name:"Preset 6", encBank:3, matBank:3, padLBank:3, padRBank:3, usbMode:0, midiCh:1 }
-  ],
-  customBanks: {
-    matrix: Array(9).fill(null).map((_,i) => ({ name: MAT_BANK_NAMES[i]||'Custom', keys: Array(16).fill(null) })),
-    padL:   Array(9).fill(null).map((_,i) => ({ name: MAT_BANK_NAMES[i]||'Custom', keys: Array(16).fill(null) })),
-    padR:   Array(9).fill(null).map((_,i) => ({ name: MAT_BANK_NAMES[i]||'Custom', keys: Array(16).fill(null) })),
-    enc:    Array(9).fill(null).map((_,i) => ({ name: ENC_BANK_NAMES[i]||'Custom', turns: [null,null,null,null], clicks: [null,null,null,null] }))
-  }
+var ENC=[
+  [{ccw:'Vol-',cw:'Vol+',clk:'Mute'},{ccw:'Expr-',cw:'Expr+',clk:'-'},{ccw:'Pan L',cw:'Pan R',clk:'-'},{ccw:'Rev-',cw:'Rev+',clk:'-'}],
+  [{ccw:'Filt-',cw:'Filt+',clk:'-'},{ccw:'Res-',cw:'Res+',clk:'-'},{ccw:'Atk-',cw:'Atk+',clk:'-'},{ccw:'Rel-',cw:'Rel+',clk:'-'}],
+  [{ccw:'Mod-',cw:'Mod+',clk:'-'},{ccw:'Rev-',cw:'Rev+',clk:'-'},{ccw:'Dly-',cw:'Dly+',clk:'-'},{ccw:'Cho-',cw:'Cho+',clk:'-'}],
+  [{ccw:'Low-',cw:'Low+',clk:'-'},{ccw:'Mid-',cw:'Mid+',clk:'-'},{ccw:'Hi-',cw:'Hi+',clk:'-'},{ccw:'Pres-',cw:'Pres+',clk:'-'}],
+  [{ccw:'BPM-',cw:'BPM+',clk:'Tap'},{ccw:'Plhd<',cw:'Plhd>',clk:'Play'},{ccw:'Loop<',cw:'Loop>',clk:'Loop'},{ccw:'Zm-',cw:'Zm+',clk:'Fit'}],
+  [{ccw:'Snd1-',cw:'Snd1+',clk:'-'},{ccw:'Snd2-',cw:'Snd2+',clk:'-'},{ccw:'Snd3-',cw:'Snd3+',clk:'-'},{ccw:'Mstr-',cw:'Mstr+',clk:'Dim'}],
+  [{ccw:'Scr Up',cw:'Scr Dn',clk:'MClk'},{ccw:'Scr L',cw:'Scr R',clk:'-'},{ccw:'Zm-',cw:'Zm+',clk:'Z0'},{ccw:'Brsh-',cw:'Brsh+',clk:'-'}],
+  [{ccw:'CC28-',cw:'CC28+',clk:'-'},{ccw:'CC29-',cw:'CC29+',clk:'-'},{ccw:'CC30-',cw:'CC30+',clk:'-'},{ccw:'CC31-',cw:'CC31+',clk:'-'}]
+];
+
+var presets=[{name:'Preset 1',padL:0,mat:2,padR:4,enc:0},{name:'Preset 2',padL:5,mat:0,padR:4,enc:1},{name:'Preset 3',padL:0,mat:1,padR:3,enc:2},{name:'Preset 4',padL:1,mat:2,padR:4,enc:4},{name:'Preset 5',padL:2,mat:4,padR:5,enc:0},{name:'Preset 6',padL:3,mat:3,padR:3,enc:3}];
+var actP=0,selK=null,lastFocusedInput=null;
+
+// Target Fokus Dinamis Global (Untuk Combo, Tap-Dance, Macro Input)
+var activeTarget = null;
+
+// Dynamic lists
+var MACROS=Array.from({length:4},function(_,i){return{id:'M'+i,name:'Macro '+(i+1),steps:[]}});
+var TAPDANCES=Array.from({length:4},function(_,i){return{id:'TD'+i,name:'Tap-Dance '+(i+1),tap:null,hold:null,double:null,taphold:null,term:200}});
+var COMBOS=Array.from({length:4},function(_,i){return{id:'CB'+i,name:'Combo '+(i+1),keys:[],action:null}});
+var ALTREPEAT=Array.from({length:4},function(_,i){return{id:'AR'+i,name:'Rule '+(i+1),enabled:false,lastKey:'',altKey:'',bidirectional:false,defaultAlt:false,ignoreMod:false}});
+var LED={mode:'single',brightness:60,hue:120,sat:100,fadeSpeed:5,respHue:0,respSat:100,respDur:300,respRandom:false};
+
+// MIDI config
+var MIDI_CFG={
+  channel:1, 
+  transpose:0, 
+  velocity:100, 
+  ccValues:Array.from({length:16},function(_,i){return{cc:i+64,name:'CC '+(i+64),mode:'momentary',min:0,max:127}}),
+  customNotes:{}
 };
-let activePreset = 0;
-let isModified = false;
 
-// ─── Bank Name Constants ────────────────────────────────
-const MAT_BANK_NAMES = ['Drum Kit','Chromatic','DAW Ctrl','Media','Shortcut','MIDI CC','Numpad','Browser','Custom'];
-const ENC_BANK_NAMES = ['Vol & Mix','Synth','Mod & FX','EQ Ctrl','DAW Nav','Mixer','Scroll','CC Free','Custom'];
+// Global state variables for MIDI Note Feature
+var virtualMidiVel=100;
+var velModeSelect='tap'; // Tap / Hold mode for assignment
+var selectedMidiEditNote=null;
 
-// ─── Default Bank Actions ──────────────────────────────
-const DEFAULT_MAT_BANKS = [
-  // Bank 0: Drum Kit
-  [{t:'midi',sub:'note',note:36,label:'Kick'},{t:'midi',sub:'note',note:38,label:'Snare'},{t:'midi',sub:'note',note:42,label:'HiHat'},{t:'midi',sub:'note',note:46,label:'OpenHH'},
-   {t:'midi',sub:'note',note:49,label:'Crash'},{t:'midi',sub:'note',note:51,label:'Ride'},{t:'midi',sub:'note',note:41,label:'Tom1'},{t:'midi',sub:'note',note:43,label:'Tom2'},
-   {t:'midi',sub:'note',note:45,label:'Tom3'},{t:'midi',sub:'note',note:47,label:'Tom4'},{t:'midi',sub:'note',note:37,label:'Rim'},{t:'midi',sub:'note',note:39,label:'Clap'},
-   {t:'midi',sub:'note',note:56,label:'Cowbell'},{t:'midi',sub:'note',note:54,label:'Tamb'},{t:'midi',sub:'note',note:60,label:'HiBng'},{t:'midi',sub:'note',note:62,label:'LoBng'}],
-  // Bank 1: Chromatic
-  [48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63].map(n=>({t:'midi',sub:'note',note:n,label:midiNoteName(n)})),
-  // Bank 2: DAW Ctrl
-  [{t:'hid',label:'Play',combo:'Space'},{t:'hid',label:'Stop',key:'F8'},{t:'hid',label:'Record',key:'F9'},{t:'hid',label:'Loop',combo:'Ctrl+L'},
-   {t:'hid',label:'Undo',combo:'Ctrl+Z'},{t:'hid',label:'Redo',combo:'Ctrl+Shift+Z'},{t:'hid',label:'Save',combo:'Ctrl+S'},{t:'hid',label:'Metro',key:'C'},
-   {t:'hid',label:'Marker',combo:'Ctrl+B'},{t:'hid',label:'Quant',combo:'Ctrl+U'},{t:'hid',label:'Arm',key:'Q'},{t:'hid',label:'Solo',key:'S'},
-   {t:'hid',label:'Mute',key:'M'},{t:'hid',label:'Bounce',combo:'Ctrl+Shift+E'},{t:'hid',label:'Export',combo:'Ctrl+Shift+R'},{t:'hid',label:'Tap',key:'F6'}],
-  // Bank 3: Media
-  [{t:'media',label:'Play/Pause',code:0xCD},{t:'media',label:'Next',code:0xB5},{t:'media',label:'Prev',code:0xB6},{t:'media',label:'Stop',code:0xB7},
-   {t:'media',label:'Vol+',code:0xE9},{t:'media',label:'Vol-',code:0xEA},{t:'media',label:'Mute',code:0xE2},{t:'hid',label:'PrtScr',key:'PrintScreen'},
-   {t:'hid',label:'Zoom+',combo:'Ctrl+='},{t:'hid',label:'Zoom-',combo:'Ctrl+-'},{t:'hid',label:'Fullscr',key:'F11'},{t:'hid',label:'Home',key:'Home'},
-   {t:'hid',label:'End',key:'End'},{t:'hid',label:'PgUp',key:'PageUp'},{t:'hid',label:'PgDn',key:'PageDown'},{t:'hid',label:'Esc',key:'Escape'}],
-  // Bank 4: Shortcut
-  [{t:'hid',label:'Cut',combo:'Ctrl+X'},{t:'hid',label:'Copy',combo:'Ctrl+C'},{t:'hid',label:'Paste',combo:'Ctrl+V'},{t:'hid',label:'Undo',combo:'Ctrl+Z'},
-   {t:'hid',label:'Redo',combo:'Ctrl+Shift+Z'},{t:'hid',label:'Sel All',combo:'Ctrl+A'},{t:'hid',label:'Find',combo:'Ctrl+F'},{t:'hid',label:'Save',combo:'Ctrl+S'},
-   {t:'hid',label:'New',combo:'Ctrl+N'},{t:'hid',label:'Close',combo:'Ctrl+W'},{t:'hid',label:'Bold',combo:'Ctrl+B'},{t:'hid',label:'Italic',combo:'Ctrl+I'},
-   {t:'hid',label:'Under',combo:'Ctrl+U'},{t:'hid',label:'Zoom+',combo:'Ctrl+='},{t:'hid',label:'Zoom-',combo:'Ctrl+-'},{t:'hid',label:'Zoom0',combo:'Ctrl+0'}],
-  // Bank 5: MIDI CC
-  [{t:'midi',sub:'cc',cc:64,val:127,label:'Sus ON'},{t:'midi',sub:'cc',cc:64,val:0,label:'Sus OFF'},{t:'midi',sub:'cc',cc:66,val:127,label:'Sos ON'},{t:'midi',sub:'cc',cc:66,val:0,label:'Sos OFF'},
-   {t:'midi',sub:'cc',cc:67,val:127,label:'Soft ON'},{t:'midi',sub:'cc',cc:67,val:0,label:'Soft OFF'},{t:'midi',sub:'cc',cc:1,val:0,label:'Mod 0'},{t:'midi',sub:'cc',cc:1,val:64,label:'Mod 64'},
-   {t:'midi',sub:'cc',cc:1,val:127,label:'Mod Max'},{t:'midi',sub:'cc',cc:10,val:64,label:'Pan Ctr'},{t:'midi',sub:'cc',cc:121,val:0,label:'CC Reset'},{t:'midi',sub:'panic',label:'PANIC'},
-   {t:'midi',sub:'cc',cc:80,val:127,label:'CC 80'},{t:'midi',sub:'cc',cc:81,val:127,label:'CC 81'},{t:'midi',sub:'cc',cc:82,val:127,label:'CC 82'},{t:'midi',sub:'cc',cc:83,val:127,label:'CC 83'}],
-  // Bank 6: Numpad
-  '789/456*123-0.+='.split('').map(k=>({t:'hid',label:k==='+'?'Enter':(k==='='?'+':k),key:k})),
-  // Bank 7: Browser
-  [{t:'hid',label:'Back',combo:'Alt+Left'},{t:'hid',label:'Fwd',combo:'Alt+Right'},{t:'hid',label:'Refresh',key:'F5'},{t:'hid',label:'New Tab',combo:'Ctrl+T'},
-   {t:'hid',label:'Close',combo:'Ctrl+W'},{t:'hid',label:'Reopen',combo:'Ctrl+Shift+T'},{t:'hid',label:'Next Tab',combo:'Ctrl+Tab'},{t:'hid',label:'Prev Tab',combo:'Ctrl+Shift+Tab'},
-   {t:'hid',label:'Find',combo:'Ctrl+F'},{t:'hid',label:'DevTools',key:'F12'},{t:'hid',label:'Zoom+',combo:'Ctrl+='},{t:'hid',label:'Zoom-',combo:'Ctrl+-'},
-   {t:'hid',label:'Zoom0',combo:'Ctrl+0'},{t:'hid',label:'Home',key:'Home'},{t:'hid',label:'End',key:'End'},{t:'hid',label:'Full',key:'F11'}],
-  // Bank 8: Custom
-  Array(16).fill(null)
+// Stream apps
+var STREAM_APPS=[
+  {name:'OBS Studio',icon:'🎬',color:'#c94040',actions:[{key:'F13',name:'Start Recording'},{key:'F14',name:'Start Streaming'},{key:'F15',name:'Scene 1'},{key:'F16',name:'Scene 2'},{key:'F17',name:'Scene 3'},{key:'F18',name:'Mute Mic'}]},
+  {name:'Discord',icon:'🎮',color:'#5865f2',actions:[{key:'F19',name:'Toggle Mic'},{key:'F20',name:'Toggle Deaf'},{key:'F21',name:'Push to Talk'},{key:'F22',name:'Screen Share'}]},
+  {name:'Spotify',icon:'🎵',color:'#1db954',actions:[{key:'F23',name:'Play/Pause'},{key:'F24',name:'Next Track'}]}
 ];
 
-const DEFAULT_ENC_BANKS = [
-  [{cc:7,label:'Volume'},{cc:11,label:'Expr'},{cc:10,label:'Pan'},{cc:91,label:'Reverb'}],
-  [{cc:74,label:'Filter'},{cc:71,label:'Reson'},{cc:73,label:'Attack'},{cc:72,label:'Release'}],
-  [{cc:1,label:'Mod'},{cc:91,label:'Reverb'},{cc:94,label:'Delay'},{cc:93,label:'Chorus'}],
-  [{cc:20,label:'Low EQ'},{cc:21,label:'Mid EQ'},{cc:22,label:'High EQ'},{cc:23,label:'Presence'}],
-  [{label:'BPM ↕',t:'hid',key:'Arrow'},{label:'Playhead ↔',t:'hid',key:'Arrow'},{label:'Loop ↔',t:'hid',combo:'Shift+Arrow'},{label:'Zoom',t:'hid',combo:'Ctrl+±'}],
-  [{cc:24,label:'Send 1'},{cc:25,label:'Send 2'},{cc:26,label:'Send 3'},{cc:7,label:'Master'}],
-  [{label:'Scroll V',t:'hid'},{label:'Scroll H',t:'hid'},{label:'Zoom ±',t:'hid'},{label:'Brush Size',t:'hid'}],
-  [{cc:28,label:'CC 28'},{cc:29,label:'CC 29'},{cc:30,label:'CC 30'},{cc:31,label:'CC 31'}],
-  [{label:'Custom 1'},{label:'Custom 2'},{label:'Custom 3'},{label:'Custom 4'}]
-];
-
-function midiNoteName(n) {
-  const names=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
-  return names[n%12]+(Math.floor(n/12)-1);
+// ══════════════════════════════════════════
+// FOCUS SYSTEM
+// ══════════════════════════════════════════
+function setFocusTarget(targetObj, el) {
+  activeTarget = targetObj;
+  document.querySelectorAll('.target-focus').forEach(e => e.classList.remove('target-focus'));
+  if(el) el.classList.add('target-focus');
+  toast('Pilih aksi dari Virtual Keyboard di bawah', '');
 }
 
-// ─── Active editing context ─────────────────────────────
-let editCtx = { section: null, index: null, type: null }; // type: 'key', 'enc_turn', 'enc_click'
-let pendingAction = null;
-let currentTab = 'basic';
-
-// ═══════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════
-function init() {
-  renderPresetTabs();
-  renderAll();
-  updateConnStatus();
+function clearFocusTarget() {
+  activeTarget = null;
+  document.querySelectorAll('.target-focus').forEach(e => e.classList.remove('target-focus'));
 }
 
-// ═══════════════════════════════════════════════════════
-//  RENDER
-// ═══════════════════════════════════════════════════════
-function renderAll() {
-  const p = config.presets[activePreset];
-  document.getElementById('padl-bank').value = p.padLBank;
-  document.getElementById('mat-bank').value  = p.matBank;
-  document.getElementById('padr-bank').value = p.padRBank;
-  document.getElementById('enc-bank').value  = p.encBank;
-  renderKeyGrid('padl-grid','padL', p.padLBank);
-  renderKeyGrid('mat-grid', 'mat',  p.matBank);
-  renderKeyGrid('padr-grid','padR', p.padRBank);
-  renderEncoders(p.encBank);
+document.addEventListener('focusin',function(e){
+  if(e.target.tagName==='INPUT') lastFocusedInput=e.target;
+});
+
+// Clear focus when switching tabs
+document.querySelectorAll('.ntab').forEach(t => {
+  t.addEventListener('click', clearFocusTarget);
+});
+
+// ══════════════════════════════════════════
+// UNDO / REDO
+// ══════════════════════════════════════════
+var histStack=[],histStep=-1,isRest=false;
+function saveH(){
+  if(isRest)return;
+  var s=JSON.stringify({presets,MAT,ENC,MACROS,TAPDANCES,COMBOS,ALTREPEAT,LED,BN,MIDI_CFG,STREAM_APPS});
+  if(histStep<histStack.length-1)histStack=histStack.slice(0,histStep+1);
+  histStack.push(s);
+  if(histStack.length>60)histStack.shift();else histStep++;
+  updUndoUI();
+}
+function doUndo(){if(histStep>0){histStep--;restH(histStack[histStep]);toast('Undo');}}
+function doRedo(){if(histStep<histStack.length-1){histStep++;restH(histStack[histStep]);toast('Redo');}}
+function restH(s){
+  isRest=true;
+  var d=JSON.parse(s);
+  presets=d.presets;MAT=d.MAT;ENC=d.ENC;MACROS=d.MACROS;
+  TAPDANCES=d.TAPDANCES;COMBOS=d.COMBOS;
+  if(d.ALTREPEAT)ALTREPEAT=d.ALTREPEAT;
+  if(d.LED)LED=d.LED;
+  if(d.BN)BN=d.BN;
+  if(d.MIDI_CFG)MIDI_CFG=d.MIDI_CFG;
+  if(d.STREAM_APPS)STREAM_APPS=d.STREAM_APPS;
+  if(actP>=presets.length)actP=presets.length-1;
+  rebuildAll();isRest=false;
+}
+function updUndoUI(){
+  document.getElementById('btn-undo').disabled=(histStep<=0);
+  document.getElementById('btn-redo').disabled=(histStep>=histStack.length-1);
 }
 
-function renderKeyGrid(gridId, section, bankIdx) {
-  const grid = document.getElementById(gridId);
-  grid.innerHTML = '';
-  const bankKeys = DEFAULT_MAT_BANKS[bankIdx] || Array(16).fill(null);
-  const customKeys = config.customBanks[section]?.[bankIdx]?.keys || [];
-  for (let i = 0; i < 16; i++) {
-    const action = customKeys[i] || bankKeys[i];
-    const btn = document.createElement('button');
-    btn.className = 'key-btn ' + getTypeClass(action);
-    btn.innerHTML = `<span class="key-num">${i+1}</span>
-      <span class="key-label">${getLabel(action)}</span>
-      <span class="key-type">${getTypeTag(action)}</span>`;
-    btn.onclick = () => openKeyPicker(section, i, 'key');
-    btn.title = getLabel(action);
+// ══════════════════════════════════════════
+// MODAL (Fallback Only)
+// ══════════════════════════════════════════
+var _mRes=null;
+function showModal(title,desc,def,grabKeys){
+  return new Promise(function(res){
+    _mRes=res;
+    document.getElementById('mo-title').textContent=title;
+    document.getElementById('mo-desc').textContent=desc||'';
+    var inp=document.getElementById('mo-inp');
+    inp.value=def||'';
+    inp.onkeydown=function(e){
+      if(e.key==='Enter'){e.preventDefault();moOK();return;}
+      if(e.key==='Escape'){e.preventDefault();moCancel();return;}
+      if(grabKeys){
+        if(e.key==='Tab')return;
+        e.preventDefault();
+        let k=e.key;if(k==='Unidentified')return;
+        let mods=[];
+        if(e.ctrlKey)mods.push('Ctrl');if(e.shiftKey)mods.push('Shift');if(e.altKey)mods.push('Alt');if(e.metaKey)mods.push('Win');
+        if(['Control','Shift','Alt','Meta'].includes(k)){inp.value=mods.join('+');}
+        else{if(k===' ')k='Space';else if(k.length===1)k=k.toUpperCase();mods.push(k);inp.value=mods.join('+');}
+      }
+    };
+    inp.placeholder=grabKeys?'Tekan kombinasi di keyboard fisik...':'';
+    document.getElementById('mo').classList.add('on');
+    setTimeout(function(){inp.select();inp.focus();},80);
+  });
+}
+function moOK(){var v=document.getElementById('mo-inp').value;document.getElementById('mo').classList.remove('on');if(_mRes){_mRes(v);_mRes=null;}}
+function moCancel(){document.getElementById('mo').classList.remove('on');if(_mRes){_mRes(null);_mRes=null;}}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function toast(msg,type){
+  var tc=document.getElementById('toast-c');
+  var el=document.createElement('div');el.className='toast';el.textContent=msg;
+  if(type==='ok')el.classList.add('ok');if(type==='err')el.classList.add('err');if(type==='warn')el.classList.add('warn');
+  tc.appendChild(el);
+  requestAnimationFrame(function(){requestAnimationFrame(function(){el.classList.add('in');});});
+  setTimeout(function(){el.classList.remove('in');setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},300);},2500);
+}
+
+// ══════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════
+function initNavTabs(){
+  ['keymap','macros','tapdance','combos','altrepeat','midinote','midicc','stream','led'].forEach(function(id){
+    document.getElementById('ntab-'+id).addEventListener('click',function(){
+      document.querySelectorAll('.ntab').forEach(function(t){t.classList.remove('on');});
+      document.querySelectorAll('.ws').forEach(function(w){w.classList.remove('on');});
+      this.classList.add('on');
+      document.getElementById('ws-'+id).classList.add('on');
+      if(id==='macros')renderMacros();
+      if(id==='tapdance')renderTD();
+      if(id==='combos')renderCombos();
+      if(id==='altrepeat')renderAR();
+      if(id==='midinote')renderMIDINote();
+      if(id==='midicc')renderMIDICC();
+      if(id==='stream')renderStream();
+      if(id==='led')renderLED();
+    });
+  });
+  ['basic','media','stream','midinote','midicc','macro','td','combo','altrep','ledcfg'].forEach(function(id){
+    document.getElementById('ptab-'+id).addEventListener('click',function(){
+      document.querySelectorAll('.ptab').forEach(function(t){t.classList.remove('on');});
+      document.querySelectorAll('.pb').forEach(function(b){b.classList.remove('on');});
+      this.classList.add('on');
+      document.getElementById('pb-'+id).classList.add('on');
+    });
+  });
+}
+
+// ══════════════════════════════════════════
+// PRESETS
+// ══════════════════════════════════════════
+function renderPresets(){
+  var pl=document.getElementById('preset-list');pl.innerHTML='';
+  presets.forEach(function(p,i){
+    var b=document.createElement('button');b.className='ppill'+(i===actP?' on':'');b.textContent=p.name;
+    b.addEventListener('click',function(){setPreset(i);});pl.appendChild(b);
+  });
+}
+function setPreset(i){actP=i;renderPresets();updBankSels();renderBoard();}
+
+// ══════════════════════════════════════════
+// BANK SELECTORS
+// ══════════════════════════════════════════
+function updBankSels(){
+  [['padl','padL'],['mat','mat'],['padr','padR'],['enc','enc']].forEach(function(pair){
+    var did=pair[0],sec=pair[1];
+    var sel=document.getElementById('sel-'+did);if(!sel)return;
+    sel.innerHTML='';
+    BN[sec].forEach(function(n,i){
+      var tag=i<8?'[D]':'[★]';
+      var opt=document.createElement('option');opt.value=i;opt.textContent=(i+1)+'. '+tag+' '+n;sel.appendChild(opt);
+    });
+    sel.value=presets[actP][sec];
+  });
+}
+
+function cloneIfDefault(sec){
+  var bIdx=presets[actP][sec];
+  if(bIdx<8){
+    var newBank=JSON.parse(JSON.stringify(sec==='enc'?ENC[bIdx]:MAT[bIdx]));
+    if(sec==='enc'){ENC.push(newBank);presets[actP].enc=ENC.length-1;}
+    else{MAT.push(newBank);presets[actP][sec]=MAT.length-1;}
+    var newName='★ '+BN[sec][bIdx];BN[sec].push(newName);
+    updBankSels();toast('Auto-clone: "'+newName+'"','ok');return true;
+  }
+  return false;
+}
+
+// ══════════════════════════════════════════
+// BOARD
+// ══════════════════════════════════════════
+function badge(a){
+  if(!a)return'';
+  var cl=a.t==='midi'?'bd-midi':a.t==='media'?'bd-media':a.t==='macro'?'bd-macro':a.t==='td'?'bd-td':a.t==='stream'?'bd-stream':'bd-hid';
+  return'<div class="kbd '+cl+'"></div>';
+}
+function renderBoard(){
+  var p=presets[actP];
+  var se=document.getElementById('sel-enc');if(se)se.value=p.enc;
+  var sl=document.getElementById('sel-padl');if(sl)sl.value=p.padL;
+  var sm=document.getElementById('sel-mat');if(sm)sm.value=p.mat;
+  var sr=document.getElementById('sel-padr');if(sr)sr.value=p.padR;
+  drawGrid('padL','padl',p.padL);drawGrid('mat','mat',p.mat);drawGrid('padR','padr',p.padR);
+  for(var i=0;i<4;i++){var e=ENC[p.enc][i];setEncKey(i,'ccw',e.ccw);setEncKey(i,'clk',e.clk);setEncKey(i,'cw',e.cw);}
+  document.getElementById('oled-name').textContent=p.name;
+  document.getElementById('oled-sub').textContent=BN.enc[p.enc];
+  updSelVis();
+}
+function setEncKey(ei,part,lbl){
+  var el=document.getElementById('k-enc-'+ei+'-'+part);if(!el)return;
+  el.innerHTML='<span>'+lbl+'</span><div class="ksub">'+part.toUpperCase()+'</div>';
+}
+function drawGrid(sec,divId,bIdx){
+  var grid=document.getElementById('grid-'+divId);if(!grid)return;grid.innerHTML='';
+  var bank=MAT[bIdx]||[];
+  for(var i=0;i<16;i++){
+    var a=bank[i]||null;
+    var btn=document.createElement('div');btn.className='key';btn.id='k-'+sec+'-'+i;
+    btn.innerHTML=badge(a)+'<span>'+(a?a.l:'—')+'</span><div class="ksub">'+(a?(a.t||'').toUpperCase():'')+'</div>';
+    (function(s,idx){btn.addEventListener('click',function(){selKey('mat',s,null,idx);});})(sec,i);
     grid.appendChild(btn);
   }
 }
-
-function renderEncoders(bankIdx) {
-  const grid = document.getElementById('encoder-grid');
-  grid.innerHTML = '';
-  const bankDefs = DEFAULT_ENC_BANKS[bankIdx] || [];
-  const encNames = ['Enc 1','Enc 2','Enc 3','Enc 4'];
-  for (let i = 0; i < 4; i++) {
-    const def = bankDefs[i] || {};
-    const div = document.createElement('div');
-    div.className = 'enc-key';
-    div.innerHTML = `<div class="enc-disc">↻</div>
-      <div class="enc-name">${encNames[i]}</div>
-      <div class="enc-action">${def.label || def.cc !== undefined ? 'CC '+def.cc : '—'}</div>
-      <div class="enc-mode">${def.cc !== undefined ? 'MIDI CC' : (def.t === 'hid' ? 'HID Key' : 'Custom')}</div>`;
-    div.onclick = () => openKeyPicker('enc', i, 'enc_turn');
-    grid.appendChild(div);
-  }
+function selKey(type,sec,part,idx){
+  clearFocusTarget(); // Reset dynamic target focus saat memilih tombol mapping
+  selK={type:type,sec:sec,part:part,idx:idx};updSelVis();
+  var bName,loc;
+  if(type==='enc'){bName=BN.enc[presets[actP].enc];loc='Enc '+(parseInt(sec)+1)+' ['+part.toUpperCase()+']';}
+  else{bName=BN[sec][presets[actP][sec]];loc=sec+' Key #'+(idx+1);}
+  document.getElementById('status-msg').innerHTML='<span class="hi">▶ '+loc+'</span> — '+bName;
+}
+function updSelVis(){
+  document.querySelectorAll('.key.sel').forEach(function(k){k.classList.remove('sel');});
+  if(!selK)return;
+  var id=selK.type==='enc'?('k-enc-'+selK.sec+'-'+selK.part):('k-'+selK.sec+'-'+selK.idx);
+  var el=document.getElementById(id);if(el)el.classList.add('sel');
 }
 
-function renderPresetTabs() {
-  const container = document.getElementById('preset-tabs');
-  container.innerHTML = '';
-  config.presets.forEach((p, i) => {
-    const tab = document.createElement('button');
-    tab.className = 'preset-tab' + (i===activePreset?' active':'');
-    tab.textContent = p.name;
-    tab.onclick = () => { activePreset=i; renderPresetTabs(); renderAll(); };
-    container.appendChild(tab);
-  });
-}
+// ══════════════════════════════════════════
+// APPLY ACTION (INTEGRASI PENUH)
+// ══════════════════════════════════════════
+function applyAction(actObj){
+  if(!actObj) return;
+  var label = actObj.l || actObj.code || actObj.n;
 
-// ─── Action helpers ──────────────────────────────────────
-function getTypeClass(a) {
-  if (!a) return '';
-  if (a.t==='hid') return 'type-hid';
-  if (a.t==='midi') return 'type-midi';
-  if (a.t==='media') return 'type-media';
-  if (a.t==='daw') return 'type-daw';
-  return '';
-}
-function getLabel(a) {
-  if (!a) return '—';
-  return a.label || (a.cc!==undefined?'CC'+a.cc:'?');
-}
-function getTypeTag(a) {
-  if (!a) return '';
-  if (a.t==='hid') return 'HID';
-  if (a.t==='midi') return a.sub==='note'?'NOTE':a.sub==='cc'?'CC':'MIDI';
-  if (a.t==='media') return 'MEDIA';
-  return '';
-}
-
-// ═══════════════════════════════════════════════════════
-//  PRESET MANAGEMENT
-// ═══════════════════════════════════════════════════════
-function addPreset() {
-  if (config.presets.length >= 8) { showToast('Max 8 preset!','error'); return; }
-  config.presets.push({ name:'Preset '+(config.presets.length+1), encBank:0, matBank:0, padLBank:0, padRBank:0, usbMode:0, midiCh:1 });
-  activePreset = config.presets.length-1;
-  markModified();
-  renderPresetTabs(); renderAll();
-}
-function deletePreset() {
-  if (config.presets.length <= 1) { showToast('Minimal 1 preset!','error'); return; }
-  if (!confirm(`Hapus preset "${config.presets[activePreset].name}"?`)) return;
-  config.presets.splice(activePreset,1);
-  activePreset = Math.min(activePreset, config.presets.length-1);
-  markModified();
-  renderPresetTabs(); renderAll();
-}
-function onBankChange(section) {
-  const sel = {padL:'padl-bank', mat:'mat-bank', padR:'padr-bank'}[section];
-  const val = parseInt(document.getElementById(sel).value);
-  config.presets[activePreset][section+'Bank'] = val;
-  renderKeyGrid({padL:'padl-grid',mat:'mat-grid',padR:'padr-grid'}[section], section, val);
-  markModified();
-}
-function onEncBankChange() {
-  const val = parseInt(document.getElementById('enc-bank').value);
-  config.presets[activePreset].encBank = val;
-  renderEncoders(val);
-  markModified();
-}
-
-// ═══════════════════════════════════════════════════════
-//  KEY PICKER MODAL
-// ═══════════════════════════════════════════════════════
-function openKeyPicker(section, index, type) {
-  editCtx = { section, index, type };
-  const sectionLabel = {padL:'Pad Kiri',mat:'Matrix',padR:'Pad Kanan',enc:'Encoder'}[section] || section;
-  document.getElementById('modal-title').textContent = `Assign — ${sectionLabel} #${index+1}`;
-  document.getElementById('modal-subtitle').textContent =
-    type==='enc_turn' ? 'Action saat encoder diputar' :
-    type==='enc_click'? 'Action saat encoder diklik' : 'Action saat tombol ditekan';
-  pendingAction = null;
-  switchTab('basic', document.querySelector('.modal-tab'));
-  document.getElementById('key-modal').classList.add('open');
-}
-function closeModal() { document.getElementById('key-modal').classList.remove('open'); }
-function clearKey() {
-  pendingAction = null;
-  showToast('Key cleared','info');
-  closeModal();
-  applyAction(null);
-}
-
-function switchTab(tab, el) {
-  currentTab = tab;
-  document.querySelectorAll('.modal-tab').forEach(t=>t.classList.remove('active'));
-  if (el) el.classList.add('active');
-  renderModalBody(tab);
-}
-
-function renderModalBody(tab) {
-  const body = document.getElementById('modal-body');
-  if (tab==='basic') {
-    const keys = [
-      ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'],
-      ['1','2','3','4','5','6','7','8','9','0'],
-      ['Space','Enter','Backspace','Tab','Escape','Delete','Insert'],
-      ['F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12'],
-      ['↑','↓','←','→','Home','End','PageUp','PageDown'],
-      ['Ctrl','Shift','Alt','Win/GUI']
-    ].flat();
-    body.innerHTML = '<input class="search-box" placeholder="Search keys..." oninput="filterKeys(this.value)"><div class="key-picker-grid" id="basic-grid"></div>';
-    const grid = document.getElementById('basic-grid');
-    keys.forEach(k => {
-      const btn = document.createElement('button');
-      btn.className = 'picker-key';
-      btn.textContent = k;
-      btn.dataset.key = k;
-      btn.onclick = () => { selectPickerKey(btn); pendingAction = {t:'hid',key:k,label:k}; };
-      grid.appendChild(btn);
-    });
-  } else if (tab==='combos') {
-    const combos = [
-      ['Ctrl+C','Copy'],['Ctrl+V','Paste'],['Ctrl+X','Cut'],['Ctrl+Z','Undo'],
-      ['Ctrl+Shift+Z','Redo'],['Ctrl+A','Select All'],['Ctrl+S','Save'],['Ctrl+F','Find'],
-      ['Ctrl+N','New'],['Ctrl+W','Close Tab'],['Ctrl+T','New Tab'],['Ctrl+P','Print'],
-      ['Ctrl+B','Bold'],['Ctrl+I','Italic'],['Ctrl+U','Underline'],['Alt+F4','Close Window'],
-      ['Ctrl+Shift+T','Reopen Tab'],['Ctrl+Tab','Next Tab'],['Win+D','Desktop'],['Win+L','Lock'],
-      ['Ctrl+Shift+Esc','Task Manager'],['Alt+Tab','Switch Window']
-    ];
-    body.innerHTML = '<div class="key-picker-grid">' + combos.map(([combo,label]) =>
-      `<button class="picker-key" onclick="selectPickerKey(this); pendingAction={t:'hid',combo:'${combo}',label:'${label}'}">
-        <div style="font-size:9px;color:var(--text-muted)">${combo}</div>
-        <div>${label}</div>
-      </button>`).join('') + '</div>';
-  } else if (tab==='media') {
-    const media = [
-      [0xCD,'Play/Pause'],[0xB5,'Next'],[0xB6,'Prev'],[0xB7,'Stop'],
-      [0xE9,'Vol+'],[0xEA,'Vol-'],[0xE2,'Mute'],[0xE0,'Bright+'],[0xE1,'Bright-']
-    ];
-    body.innerHTML = '<div class="key-picker-grid">' + media.map(([code,label]) =>
-      `<button class="picker-key" onclick="selectPickerKey(this); pendingAction={t:'media',code:${code},label:'${label}'}">
-        <div style="font-size:16px">${{0xCD:'⏯',0xB5:'⏭',0xB6:'⏮',0xB7:'⏹',0xE9:'🔊',0xEA:'🔉',0xE2:'🔇',0xE0:'🔆',0xE1:'🔅'}[code]||'?'}</div>
-        <div>${label}</div>
-      </button>`).join('') + '</div>';
-  } else if (tab==='midi_note') {
-    body.innerHTML = `<div class="midi-note-picker">
-      <div class="midi-row">
-        <label>Note:</label>
-        <input type="number" class="midi-input" id="midi-note-num" min="0" max="127" value="60" oninput="updateNoteLabel()">
-        <span id="note-name-disp" style="color:var(--key-midi-text);font-size:13px;font-weight:600;">C4</span>
-        <label style="margin-left:12px">Velocity:</label>
-        <input type="number" class="midi-input" id="midi-note-vel" min="1" max="127" value="100">
-      </div>
-      <div style="overflow-x:auto;padding:8px 0">
-        <div class="piano-row" id="piano-row"></div>
-      </div>
-      <button class="btn btn-success" onclick="pendingAction={t:'midi',sub:'note',note:parseInt(document.getElementById('midi-note-num').value),vel:parseInt(document.getElementById('midi-note-vel').value)||100,label:document.getElementById('note-name-disp').textContent}; showToast('Note set: '+pendingAction.label,'info')">Set MIDI Note</button>
-    </div>`;
-    renderPiano();
-  } else if (tab==='midi_cc') {
-    const ccs = [
-      [1,'Mod Wheel'],[7,'Volume'],[8,'Balance'],[10,'Pan'],[11,'Expression'],
-      [64,'Sustain'],[65,'Portamento'],[66,'Sostenuto'],[67,'Soft Pedal'],
-      [71,'Resonance'],[72,'Release'],[73,'Attack'],[74,'Filter Cutoff'],
-      [91,'Reverb'],[93,'Chorus'],[94,'Delay'],[120,'All Sounds Off'],[121,'Reset All'],[123,'All Notes Off']
-    ];
-    body.innerHTML = `<div class="midi-row" style="margin-bottom:12px">
-      <label>CC #:</label><input type="number" class="midi-input" id="cc-num" min="0" max="127" value="7">
-      <label style="margin-left:12px">Value:</label><input type="number" class="midi-input" id="cc-val" min="0" max="127" value="127">
-      <button class="btn btn-success btn-sm" onclick="pendingAction={t:'midi',sub:'cc',cc:parseInt(document.getElementById('cc-num').value),val:parseInt(document.getElementById('cc-val').value),label:'CC'+document.getElementById('cc-num').value};showToast('CC set','info')">Set Custom CC</button>
-    </div>
-    <div class="cc-grid">` + ccs.map(([cc,name]) =>
-      `<div class="cc-item" onclick="selectCC(this,${cc},'${name}')">
-        <div class="cc-num">CC ${cc}</div>
-        <div class="cc-name">${name}</div>
-      </div>`).join('') + '</div>';
-  } else if (tab==='daw') {
-    const daw = [
-      ['Play','Space'],['Stop','F8'],['Record','F9'],['Loop','Ctrl+L'],
-      ['Undo','Ctrl+Z'],['Redo','Ctrl+Shift+Z'],['Save','Ctrl+S'],['Metronome','C'],
-      ['Solo','S'],['Mute','M'],['Arm Track','Q'],['Quantize','Ctrl+U'],
-      ['New Marker','Ctrl+B'],['Tempo Tap','F6'],['Bounce','Ctrl+Shift+E'],['Export','Ctrl+Shift+R']
-    ];
-    body.innerHTML = '<div class="key-picker-grid">' + daw.map(([label,combo]) =>
-      `<button class="picker-key type-daw" onclick="selectPickerKey(this); pendingAction={t:'daw',combo:'${combo}',label:'${label}'}">
-        ${label}
-      </button>`).join('') + '</div>';
-  } else if (tab==='custom') {
-    body.innerHTML = `<div style="display:flex;flex-direction:column;gap:12px">
-      <div class="midi-row">
-        <label>Label:</label>
-        <input type="text" class="midi-input" id="cust-label" placeholder="My Action" style="width:140px">
-      </div>
-      <div class="midi-row">
-        <label>Type:</label>
-        <select class="bank-select" id="cust-type" style="width:120px" onchange="updateCustomFields()">
-          <option value="hid_key">HID Key</option>
-          <option value="hid_combo">HID Combo</option>
-          <option value="midi_note">MIDI Note</option>
-          <option value="midi_cc">MIDI CC</option>
-          <option value="media">Media Key</option>
-        </select>
-      </div>
-      <div id="custom-fields"></div>
-      <button class="btn btn-success" onclick="buildCustomAction()">Build Custom Action</button>
-    </div>`;
-    updateCustomFields();
-  }
-}
-
-function filterKeys(q) {
-  document.querySelectorAll('#basic-grid .picker-key').forEach(btn => {
-    btn.style.display = btn.dataset.key.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
-  });
-}
-function selectPickerKey(el) { document.querySelectorAll('.picker-key').forEach(b=>b.classList.remove('selected')); el.classList.add('selected'); }
-function selectCC(el, cc, name) {
-  document.querySelectorAll('.cc-item').forEach(b=>b.classList.remove('selected')); el.classList.add('selected');
-  document.getElementById('cc-num').value = cc;
-  pendingAction = {t:'midi',sub:'cc',cc,val:parseInt(document.getElementById('cc-val').value)||127,label:name};
-}
-function updateNoteLabel() {
-  const n = parseInt(document.getElementById('midi-note-num').value)||60;
-  document.getElementById('note-name-disp').textContent = midiNoteName(n);
-}
-function renderPiano() {
-  const row = document.getElementById('piano-row');
-  if (!row) return;
-  const notePattern = [0,1,0,1,0,0,1,0,1,0,1,0]; // 0=white,1=black
-  let html = '';
-  for (let oct=3;oct<=5;oct++) for (let n=0;n<12;n++) {
-    const note = oct*12+n; if(note>127)break;
-    const isBlack = notePattern[n]===1;
-    html += `<div class="piano-key${isBlack?' black':''}" onclick="document.getElementById('midi-note-num').value=${note};updateNoteLabel()" title="${midiNoteName(note)}">
-      ${!isBlack&&n===0?`<span class="piano-note-label">C${oct}</span>`:''}</div>`;
-  }
-  row.innerHTML = html;
-}
-function updateCustomFields() {
-  const t = document.getElementById('cust-type').value;
-  const f = document.getElementById('custom-fields');
-  const inp = (id,placeholder,type='text',min='',max='') =>
-    `<input type="${type}" class="midi-input" id="${id}" placeholder="${placeholder}" ${min?`min="${min}"`:''} ${max?`max="${max}"`:''}>`;
-  if (t==='hid_key') f.innerHTML = `<div class="midi-row"><label>Key:</label>${inp('c-key','e.g. F13')}</div>`;
-  else if (t==='hid_combo') f.innerHTML = `<div class="midi-row"><label>Combo:</label>${inp('c-combo','e.g. Ctrl+Shift+F5')}</div>`;
-  else if (t==='midi_note') f.innerHTML = `<div class="midi-row"><label>Note:</label>${inp('c-note','0-127','number','0','127')} <label>Vel:</label>${inp('c-vel','100','number','1','127')}</div>`;
-  else if (t==='midi_cc') f.innerHTML = `<div class="midi-row"><label>CC#:</label>${inp('c-cc','0-127','number','0','127')} <label>Val:</label>${inp('c-ccval','127','number','0','127')}</div>`;
-  else if (t==='media') f.innerHTML = `<div class="midi-row"><label>Code (hex):</label>${inp('c-mcode','0xCD')}</div>`;
-}
-function buildCustomAction() {
-  const t = document.getElementById('cust-type').value;
-  const label = document.getElementById('cust-label').value || 'Custom';
-  let action = {label};
-  if (t==='hid_key') action = {...action,t:'hid',key:document.getElementById('c-key').value};
-  else if (t==='hid_combo') action = {...action,t:'hid',combo:document.getElementById('c-combo').value};
-  else if (t==='midi_note') action = {...action,t:'midi',sub:'note',note:parseInt(document.getElementById('c-note').value)||60,vel:parseInt(document.getElementById('c-vel').value)||100};
-  else if (t==='midi_cc') action = {...action,t:'midi',sub:'cc',cc:parseInt(document.getElementById('c-cc').value)||0,val:parseInt(document.getElementById('c-ccval').value)||127};
-  else if (t==='media') action = {...action,t:'media',code:parseInt(document.getElementById('c-mcode').value)||0xCD};
-  pendingAction = action;
-  showToast('Custom action built: '+label,'info');
-}
-function confirmKey() {
-  if (!pendingAction) { showToast('Pilih aksi terlebih dahulu!','error'); return; }
-  applyAction(pendingAction);
-  closeModal();
-  showToast('Key assigned: '+pendingAction.label,'success');
-}
-function applyAction(action) {
-  const { section, index, type } = editCtx;
-  if (!config.customBanks[section]) return;
-  const bankIdx = section==='enc' ? config.presets[activePreset].encBank :
-    {padL:config.presets[activePreset].padLBank, mat:config.presets[activePreset].matBank, padR:config.presets[activePreset].padRBank}[section];
-  if (type==='key') {
-    if (!config.customBanks[section][bankIdx]) config.customBanks[section][bankIdx] = {name:'Custom',keys:Array(16).fill(null)};
-    config.customBanks[section][bankIdx].keys[index] = action;
-    renderKeyGrid({padL:'padl-grid',mat:'mat-grid',padR:'padr-grid'}[section]||'', section, bankIdx);
-  }
-  markModified();
-}
-function editBank(section) { showToast('Bank editor: klik key untuk assign aksi','info'); }
-function editEncBank() { showToast('Enc bank: klik encoder untuk assign CC/aksi','info'); }
-
-// ═══════════════════════════════════════════════════════
-//  WEBSERIAL
-// ═══════════════════════════════════════════════════════
-async function toggleConnect() {
-  if (port) { await disconnectSerial(); } else { await connectSerial(); }
-}
-async function connectSerial() {
-  if (!hasSerial) { showToast('WebSerial tidak support di browser ini!','error'); return; }
-  try {
-    port = await navigator.serial.requestPort({ filters: [] });
-    await port.open({ baudRate: 115200 });
-    writer = port.writable.getWriter();
-    readSerial();
-    updateConnStatus(true);
-    setStatus('Connected','green');
-    document.getElementById('save-btn').disabled = false;
-    showToast('MacroPad terhubung!','success');
-    setTimeout(()=>pingDevice(),500);
-  } catch(e) {
-    if (e.name!=='NotFoundError') showToast('Gagal connect: '+e.message,'error');
-    port = null;
-  }
-}
-async function disconnectSerial() {
-  try {
-    if (reader) { await reader.cancel(); reader = null; }
-    if (writer) { writer.releaseLock(); writer = null; }
-    if (port)   { await port.close(); port = null; }
-  } catch(e) {}
-  updateConnStatus(false);
-  setStatus('Disconnected','red');
-  document.getElementById('save-btn').disabled = true;
-  showToast('Disconnected','info');
-}
-async function readSerial() {
-  reader = port.readable.getReader();
-  try {
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      serialBuffer += new TextDecoder().decode(value);
-      processSerialBuffer();
+  // Jika ada slot dinamik yang sedang fokus (Combo, TapDance, Macro)
+  if (activeTarget) {
+    if (activeTarget.type === 'comboKey') {
+      if(label === 'Clear') COMBOS[activeTarget.ci].keys[activeTarget.k] = undefined;
+      else COMBOS[activeTarget.ci].keys[activeTarget.k] = label;
+      COMBOS[activeTarget.ci].keys = COMBOS[activeTarget.ci].keys.filter(Boolean); // bersihkan gap
+      renderCombos(); saveH();
+    } 
+    else if (activeTarget.type === 'comboAct') {
+      COMBOS[activeTarget.ci].action = (label==='Clear') ? null : label;
+      renderCombos(); saveH();
+    } 
+    else if (activeTarget.type === 'tdSlot') {
+      TAPDANCES[activeTarget.tdi][activeTarget.prop] = (label==='Clear') ? null : label;
+      renderTD(); saveH();
+    } 
+    else if (activeTarget.type === 'macroInp') {
+      var mi = activeTarget.mi;
+      var sel = document.getElementById('mt-'+mi);
+      if(sel.value === 'action') {
+         // Simpan string berformat khusus untuk firmware jika diperlukan, atau sekadar labelnya
+         document.getElementById('mv-'+mi).value = (actObj.t==='hid') ? actObj.l : (actObj.t.toUpperCase() + ':' + label);
+      } else {
+         document.getElementById('mv-'+mi).value = label;
+      }
+      document.getElementById('mv-'+mi).dispatchEvent(new Event('input',{bubbles:true}));
+      document.getElementById('mv-'+mi).dispatchEvent(new Event('change',{bubbles:true}));
     }
-  } catch(e) { if (e.name!=='AbortError') setStatus('Serial error: '+e.message,'red'); }
-  finally { reader.releaseLock(); }
-}
-function processSerialBuffer() {
-  let nl;
-  while ((nl = serialBuffer.indexOf('\n')) !== -1) {
-    const line = serialBuffer.slice(0, nl).trim();
-    serialBuffer = serialBuffer.slice(nl+1);
-    handleSerialLine(line);
+    return; // Selesai jika menarget slot dinamis
   }
-}
-function handleSerialLine(line) {
-  if (!line.startsWith('WCFG:')) return;
-  const data = line.slice(5);
-  if (data.startsWith('PONG:')) {
-    showToast('Device: '+data.slice(5),'success');
-    setStatus('Connected — '+data.slice(5),'green');
-  } else if (data.startsWith('CONFIG:')) {
-    try {
-      const remote = JSON.parse(data.slice(7));
-      mergeRemoteConfig(remote);
-      showToast('Config loaded from device','success');
-    } catch(e) { showToast('Config parse error','error'); }
-  } else if (data==='OK' || data==='SAVED') {
-    showToast(data==='SAVED'?'Saved to SD card!':'Config applied','success');
-    if (data==='SAVED') { isModified=false; updateModifiedStatus(); }
+
+  // Fallback: Jika tidak ada target spesifik, asumsikan mapping Keymap biasa
+  var activeWs=document.querySelector('.ws.on').id;
+  if(activeWs==='ws-keymap' && document.activeElement===document.getElementById('mo-inp')){
+    document.getElementById('mo-inp').value=label; return;
   }
-}
-async function sendSerial(cmd) {
-  if (!writer) { showToast('Tidak terhubung!','error'); return; }
-  const data = new TextEncoder().encode(cmd+'\n');
-  await writer.write(data);
-}
-async function pingDevice() { await sendSerial('WCFG:PING'); }
-async function getDeviceConfig() { await sendSerial('WCFG:GET'); }
-async function saveToDevice() {
-  const payload = buildConfigPayload();
-  await sendSerial('WCFG:SET:'+JSON.stringify(payload));
-  setTimeout(()=>sendSerial('WCFG:SAVE'),500);
-}
-function buildConfigPayload() {
-  return {
-    presets: config.presets,
-    customBanks: config.customBanks
-  };
-}
-function mergeRemoteConfig(remote) {
-  if (remote.presets) config.presets = remote.presets;
-  if (remote.customBanks) config.customBanks = remote.customBanks;
-  renderPresetTabs(); renderAll();
-}
-
-// ═══════════════════════════════════════════════════════
-//  IMPORT / EXPORT
-// ═══════════════════════════════════════════════════════
-function exportJSON() {
-  const blob = new Blob([JSON.stringify(buildConfigPayload(), null, 2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'macropad_config.json';
-  a.click();
-  showToast('Config exported','success');
-}
-function importJSON() { document.getElementById('import-input').click(); }
-function handleImport(e) {
-  const file = e.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const data = JSON.parse(ev.target.result);
-      mergeRemoteConfig(data);
-      markModified();
-      showToast('Config imported dari '+file.name,'success');
-    } catch(err) { showToast('File JSON tidak valid','error'); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-}
-
-// ─── Firmware Patch ────────────────────────────────────
-function copyFirmwarePatch() {
-  const patch = `// ─── Tambahkan di handleSerialCommands() ───────────────
-// Cari: } else if (cmd == '...') {
-// Tambahkan SEBELUM default case:
-
-// WebConfig Protocol
-if (line.startsWith("WCFG:")) {
-  String wcmd = line.substring(5);
-  if (wcmd == "PING") {
-    Serial.println("WCFG:PONG:MacroPad_v1.0");
-  } else if (wcmd == "GET") {
-    // Build and send config JSON
-    String cfg = "{\\\"presets\\\":[";
-    for (int i=0;i<totalPresets;i++) {
-      if(i>0)cfg+=",";
-      cfg+="{\\\"name\\\":\\\""+String(presets[i].name)+"\\\",";
-      cfg+="\\\"encBank\\\":"+String(presets[i].encBank)+",";
-      cfg+="\\\"matBank\\\":"+String(presets[i].matBank)+",";
-      cfg+="\\\"padLBank\\\":"+String(presets[i].padLBank)+",";
-      cfg+="\\\"padRBank\\\":"+String(presets[i].padRBank)+"}";
-    }
-    cfg+="]}";
-    Serial.println("WCFG:CONFIG:"+cfg);
-  } else if (wcmd.startsWith("SET:")) {
-    String json = wcmd.substring(4);
-    // Parse dan save ke SD card
-    // (pakai ArduinoJson yang sudah ada)
-    Serial.println("WCFG:OK");
-  } else if (wcmd == "SAVE") {
-    saveAllPresets();
-    Serial.println("WCFG:SAVED");
+  
+  if(activeWs!=='ws-keymap' && lastFocusedInput && document.activeElement === lastFocusedInput){
+    lastFocusedInput.value = label;
+    lastFocusedInput.dispatchEvent(new Event('input',{bubbles:true}));
+    lastFocusedInput.dispatchEvent(new Event('change',{bubbles:true}));
+    return;
   }
-  return;
-}`;
-  navigator.clipboard.writeText(patch).then(()=>showToast('Firmware patch copied!','success')).catch(()=>showToast('Copy gagal — lihat console','error'));
-}
 
-// ═══════════════════════════════════════════════════════
-//  UI HELPERS
-// ═══════════════════════════════════════════════════════
-function updateConnStatus(connected) {
-  const badge = document.getElementById('conn-badge');
-  const btn   = document.getElementById('connect-btn');
-  if (connected) {
-    badge.className = 'badge badge-connected';
-    badge.textContent = '● Connected';
-    btn.textContent = 'Disconnect';
-    btn.className = 'btn btn-danger';
+  // Keymap Assign Standar
+  if(!selK){toast('Klik dulu slot/tombol layout!','err');return;}
+  var p=presets[actP];
+  var finalAct = (actObj.l === 'Clear') ? null : actObj;
+  
+  if(selK.type==='enc'){
+    cloneIfDefault('enc');ENC[p.enc][selK.sec][selK.part] = finalAct ? finalAct.l : '—';
   } else {
-    badge.className = 'badge badge-disconnected';
-    badge.textContent = '● Disconnected';
-    btn.textContent = 'Connect USB';
-    btn.className = 'btn btn-primary';
+    var sec=selK.sec;cloneIfDefault(sec);
+    MAT[p[sec]][selK.idx] = finalAct;
+    if(finalAct && selK.idx<15) selKey('mat',sec,null,selK.idx+1); // auto next
   }
-}
-function markModified() {
-  isModified = true;
-  updateModifiedStatus();
-}
-function updateModifiedStatus() {
-  const el = document.getElementById('status-modified');
-  el.style.display = isModified ? '' : 'none';
-}
-function setStatus(msg, color) {
-  document.getElementById('status-text').textContent = msg;
-  const dot = document.getElementById('status-dot');
-  dot.style.background = color==='green'?'var(--green)':color==='orange'?'var(--orange)':'var(--red)';
-}
-function showToast(msg, type='info') {
-  const container = document.getElementById('toast-container');
-  const toast = document.createElement('div');
-  toast.className = 'toast '+type;
-  toast.textContent = msg;
-  container.appendChild(toast);
-  requestAnimationFrame(()=>{ requestAnimationFrame(()=>{ toast.classList.add('show'); }); });
-  setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=>toast.remove(),300); }, 2500);
+  renderBoard();saveH();
 }
 
-// ─── Keyboard close modal ──────────────────────────────
-document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
-document.getElementById('key-modal').addEventListener('click', e => { if(e.target.id==='key-modal') closeModal(); });
+// ══════════════════════════════════════════
+// KEY GRABBER HELPER
+// ══════════════════════════════════════════
+function grabKeyOnInput(inp){
+  inp.addEventListener('keydown',function(e){
+    // Jangan grab jika sedang dalam mode "Virtual Action"
+    var typeSel = document.getElementById('mt-' + this.id.split('-')[1]);
+    if(typeSel && typeSel.value === 'action') { e.preventDefault(); return; }
 
-// ─── Check WebSerial ────────────────────────────────────
-if (!hasSerial) {
-  const badge = document.getElementById('conn-badge');
-  badge.className = 'badge badge-nowebserial';
-  badge.textContent = '⚠ No WebSerial';
-  document.getElementById('connect-btn').disabled = true;
-  setStatus('WebSerial not available — use Chrome/Edge','orange');
+    if(e.key==='Tab'||e.key==='Enter')return;
+    e.preventDefault();
+    let k=e.key;if(k==='Unidentified')return;
+    let mods=[];
+    if(e.ctrlKey)mods.push('Ctrl');if(e.shiftKey)mods.push('Shift');if(e.altKey)mods.push('Alt');if(e.metaKey)mods.push('Win');
+    if(['Control','Shift','Alt','Meta'].includes(k)){this.value=mods.join('+');}
+    else{if(k===' ')k='Space';else if(k.length===1)k=k.toUpperCase();mods.push(k);this.value=mods.join('+');}
+    this.dispatchEvent(new Event('input',{bubbles:true}));this.dispatchEvent(new Event('change',{bubbles:true}));
+  });
 }
 
-// ─── INIT ─────────────────────────────────────────────
-init();
-setStatus('Ready — Connect MacroPad via USB','orange');
-</script>
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js')
-        .then(reg => console.log('Service Worker terdaftar!', reg))
-        .catch(err => console.log('Service Worker gagal:', err));
+// ══════════════════════════════════════════
+// PICKER BUILDER
+// ══════════════════════════════════════════
+function mkPK(label,sub,cls,action){
+  var b=document.createElement('div');b.className='pk '+(cls||'');
+  b.innerHTML='<span>'+label+'</span>'+(sub?'<span class="ps">'+sub+'</span>':'');
+  b.addEventListener('mousedown',function(e){
+    if(document.activeElement && document.activeElement.tagName==='INPUT' && !activeTarget) e.preventDefault();
+  });
+  b.addEventListener('click',function(){applyAction(action);});
+  return b;
+}
+function addSec(txt,target){var d=document.createElement('span');d.className='pksec';d.textContent=txt;target.appendChild(d);}
+
+function updMidiPicker() {
+  var mnig = document.getElementById('pk-midinote');
+  mnig.innerHTML = '';
+
+  var trans = MIDI_CFG.transpose || 0;
+
+  // Modifiers & Actions Section
+  var modBox = document.createElement('div');
+  modBox.className = 'midi-group-box';
+  modBox.style.marginBottom = '12px';
+  modBox.innerHTML = '<div class="midi-group-title">Assignable Modifiers (Klik untuk Assign ke Tombol)</div>';
+  
+  var actionTools = document.createElement('div');
+  actionTools.style.cssText = 'display:flex; align-items:center; gap:8px; margin-bottom:10px; flex-wrap:wrap';
+  
+  actionTools.innerHTML += '<button class="btn btn-amber" id="btn-pk-tup" title="Assign Transpose Up">Trans +</button>';
+  actionTools.innerHTML += '<button class="btn btn-amber" id="btn-pk-tdn" title="Assign Transpose Down">Trans -</button>';
+  actionTools.innerHTML += '<div class="sep"></div>';
+  actionTools.innerHTML += '<button class="btn btn-green" id="btn-pk-vup" title="Assign Velocity Up">Vel +</button>';
+  actionTools.innerHTML += '<button class="btn btn-green" id="btn-pk-vdn" title="Assign Velocity Down">Vel -</button>';
+  actionTools.innerHTML += '<div class="sep"></div>';
+  actionTools.innerHTML += '<span style="font-size:9px;color:var(--muted)">Velocity Type:</span>' +
+                           '<select class="csel" id="vel-mod-type" style="width:auto;margin-right:10px">' +
+                           '<option value="tap">Tap (Latch)</option><option value="hold">Hold (Momentary)</option></select>';
+  modBox.appendChild(actionTools);
+
+  // Velocity 0% - 100% Grid
+  var velGrid = document.createElement('div');
+  velGrid.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fit, minmax(40px, 1fr)); gap:4px;';
+  for(let v = 0; v <= 100; v += 5) {
+    let midiV = Math.round(v * 127 / 100);
+    let btn = document.createElement('div');
+    btn.className = 'pk pk-midi' + (virtualMidiVel === midiV ? ' sel' : '');
+    btn.innerHTML = v + '%<br><span class="ps">V' + midiV + '</span>';
+    btn.onclick = function() {
+      virtualMidiVel = midiV;
+      velModeSelect = document.getElementById('vel-mod-type').value;
+      updMidiPicker(); 
+      // Assign Action directly if there's a target
+      if(activeTarget || selK) {
+        applyAction({t:'midi', s:'modifier', mod:'vel_set', v: midiV, mode: velModeSelect, l: 'Vel '+v+'%'});
+        toast('Assigned: Velocity '+v+'% ('+velModeSelect+')', 'ok');
+      }
+    };
+    velGrid.appendChild(btn);
+  }
+  modBox.appendChild(velGrid);
+  mnig.appendChild(modBox);
+
+  // Virtual Keyboard Notes C2 - C4
+  var noteBox = document.createElement('div');
+  noteBox.className = 'midi-group-box';
+  noteBox.innerHTML = '<div class="midi-group-title">Virtual Keyboard (C2 – B4)</div>';
+
+  var groups = [
+    { title: 'Octave 2', start: 2, octs: 1 },
+    { title: 'Octave 3', start: 3, octs: 1 },
+    { title: 'Octave 4', start: 4, octs: 1 }
+  ];
+
+  var container = document.createElement('div');
+  container.className = 'midi-group-container';
+  container.style.flexDirection = 'column';
+
+  groups.forEach(function(g) {
+    var gridRow = document.createElement('div');
+    gridRow.style.cssText = 'display:flex; align-items:center; gap:6px;';
+    
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'width:40px; font-size:9px; font-weight:700; color:var(--muted); text-transform:uppercase';
+    lbl.textContent = g.title;
+    gridRow.appendChild(lbl);
+
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid; grid-template-columns:repeat(12, 1fr); gap:3px; flex:1;';
+
+    for(var oct = 0; oct < g.octs; oct++){
+      for(var i = 0; i < 12; i++){
+        var baseNote = 12 + ((g.start + oct) * 12) + i; // 12 is C0
+        var finalNote = baseNote + trans;
+        
+        if(finalNote < 0 || finalNote > 127) {
+          grid.appendChild(document.createElement('div'));
+          continue;
+        }
+        
+        var a = {t:'midi', s:'note', n:finalNote, l:noteN(finalNote), v: virtualMidiVel};
+        var isSharp = a.l.includes('#');
+        grid.appendChild(mkPK(a.l, 'N'+a.n, 'pk-midi'+(isSharp?' pk-obs':''), a));
+      }
+    }
+    gridRow.appendChild(grid);
+    container.appendChild(gridRow);
+  });
+  noteBox.appendChild(container);
+  mnig.appendChild(noteBox);
+
+  // Re-bind preserved state
+  document.getElementById('vel-mod-type').value = velModeSelect;
+  document.getElementById('vel-mod-type').onchange = function() { velModeSelect = this.value; };
+
+  // Bind Assignable Modifiers
+  document.getElementById('btn-pk-tup').onclick = function() { applyAction({t:'midi', s:'modifier', mod:'trans_up', l:'Trans +'}); };
+  document.getElementById('btn-pk-tdn').onclick = function() { applyAction({t:'midi', s:'modifier', mod:'trans_dn', l:'Trans -'}); };
+  document.getElementById('btn-pk-vup').onclick = function() { applyAction({t:'midi', s:'modifier', mod:'vel_up', l:'Vel +'}); };
+  document.getElementById('btn-pk-vdn').onclick = function() { applyAction({t:'midi', s:'modifier', mod:'vel_dn', l:'Vel -'}); };
+}
+
+function populatePicker(){
+  // BASIC KEYS — Virtual Keyboard (Flexbox Layout yang Sangat Rapi)
+  var kbLayout=[
+    [{k:'Esc'},{k:'F1'},{k:'F2'},{k:'F3'},{k:'F4'},{k:'F5'},{k:'F6'},{k:'F7'},{k:'F8'},{k:'F9'},{k:'F10'},{k:'F11'},{k:'F12'},{k:'Del',w:'w-15'}],
+    [{k:'~'},{k:'1'},{k:'2'},{k:'3'},{k:'4'},{k:'5'},{k:'6'},{k:'7'},{k:'8'},{k:'9'},{k:'0'},{k:'-'},{k:'='},{k:'Bspc',w:'w-15'}],
+    [{k:'Tab',w:'w-15'},{k:'Q'},{k:'W'},{k:'E'},{k:'R'},{k:'T'},{k:'Y'},{k:'U'},{k:'I'},{k:'O'},{k:'P'},{k:'['},{k:']'},{k:'\\'}],
+    [{k:'Caps',w:'w-175'},{k:'A'},{k:'S'},{k:'D'},{k:'F'},{k:'G'},{k:'H'},{k:'J'},{k:'K'},{k:'L'},{k:';'},{k:"'"},{k:'Enter',w:'w-175'}],
+    [{k:'LShft',w:'w-225'},{k:'Z'},{k:'X'},{k:'C'},{k:'V'},{k:'B'},{k:'N'},{k:'M'},{k:','},{k:'.'},{k:'/'},{k:'Up'},{k:'RShft',w:'w-125'}],
+    [{k:'LCtrl',w:'w-125'},{k:'Win',w:'w-125'},{k:'LAlt',w:'w-125'},{k:'Space',w:'w-space'},{k:'RAlt'},{k:'Left'},{k:'Down'},{k:'Right'}]
+  ];
+  var npLayout=[
+    [{k:'NumLk'},{k:'KP/'},{k:'KP*'},{k:'KP-'}],
+    [{k:'KP7'},{k:'KP8'},{k:'KP9'},{k:'KP+'}],
+    [{k:'KP4'},{k:'KP5'},{k:'KP6'},{k:'KPEnt'}],
+    [{k:'KP1'},{k:'KP2'},{k:'KP3'},{k:'KP.'}],
+    [{k:'KP0'}]
+  ];
+
+  var mainKbd=document.createElement('div');mainKbd.className='kbd-half';
+  kbLayout.forEach(function(row){
+    var rw=document.createElement('div');rw.className='kbd-row';
+    row.forEach(function(item){
+      var pk=document.createElement('div');pk.className='pk '+(item.w||'');
+      pk.textContent=item.k;
+      pk.addEventListener('mousedown',function(e){if(document.activeElement&&document.activeElement.tagName==='INPUT' && !activeTarget) e.preventDefault();});
+      pk.addEventListener('click',function(){applyAction({t:'hid',l:item.k});});
+      rw.appendChild(pk);
+    });
+    mainKbd.appendChild(rw);
+  });
+
+  var npKbd=document.createElement('div');npKbd.style.cssText='display:flex;flex-direction:column;gap:3px;align-items:flex-start;max-width:200px;flex:0.3';
+  npLayout.forEach(function(row){
+    var rw=document.createElement('div');rw.className='kbd-row';
+    row.forEach(function(item){
+      var pk=document.createElement('div');pk.className='pk '+(item.w||'');pk.textContent=item.k;
+      pk.addEventListener('mousedown',function(e){if(document.activeElement&&document.activeElement.tagName==='INPUT' && !activeTarget) e.preventDefault();});
+      pk.addEventListener('click',function(){applyAction({t:'hid',l:item.k});});
+      rw.appendChild(pk);
+    });
+    npKbd.appendChild(rw);
+  });
+
+  var bg=document.getElementById('pk-basic');bg.innerHTML='';
+  bg.appendChild(mainKbd);bg.appendChild(npKbd);
+
+  // MEDIA
+  var mg=document.getElementById('pk-media');
+  [['Play','⏯'],['Next','⏭'],['Prev','⏮'],['Stop','⏹'],['Vol+','🔊'],['Vol-','🔉'],['Mute','🔇'],
+   ['Copy','Ctrl+C'],['Cut','Ctrl+X'],['Paste','Ctrl+V'],['Undo','Ctrl+Z'],['Redo','Ctrl+Y'],
+   ['Save','Ctrl+S'],['Find','Ctrl+F'],['Print','Ctrl+P'],['PrtScr',''],['Zoom+','Ctrl++'],['Zoom-','Ctrl+-'],['FullScr','F11']
+  ].forEach(function(m){mg.appendChild(mkPK(m[0],m[1],'pk-media',{t:'media',l:m[0]}));});
+
+  // STREAM
+  var sg=document.getElementById('pk-stream');
+  addSec('OBS Studio',sg);
+  [{l:'OBS:Record',k:'F13'},{l:'OBS:Stream',k:'F14'},{l:'Scene 1',k:'F15'},{l:'Scene 2',k:'F16'},{l:'Scene 3',k:'F17'},{l:'Mute Mic',k:'F18'}]
+    .forEach(function(a){sg.appendChild(mkPK(a.l,a.k,'pk-obs',{t:'stream',l:a.l,code:a.k}));});
+  addSec('Discord',sg);
+  [{l:'Mic Tog',k:'F19'},{l:'Deaf Tog',k:'F20'},{l:'PushTalk',k:'F21'},{l:'Screen',k:'F22'}]
+    .forEach(function(a){sg.appendChild(mkPK(a.l,a.k,'pk-sd',{t:'stream',l:a.l,code:a.k}));});
+  addSec('Custom',sg);
+  ['F13','F14','F15','F16','F17','F18','F19','F20','F21','F22','F23','F24']
+    .forEach(function(f){sg.appendChild(mkPK(f,'','pk-obs',{t:'stream',l:f,code:f}));});
+
+  // MIDI NOTE PICKER INIT
+  updMidiPicker();
+
+  // MIDI CC Picker
+  var mccg = document.getElementById('pk-midicc');
+  addSec('Control Change', mccg);
+  [{t:'midi',s:'cc',n:64,l:'Sustain'},{t:'midi',s:'cc',n:1,l:'Mod Whl'},{t:'midi',s:'cc',n:11,l:'Expr'},
+   {t:'midi',s:'cc',n:10,l:'Pan'},{t:'midi',s:'cc',n:7,l:'Volume'},{t:'midi',s:'cc',n:74,l:'Cutoff'},
+   {t:'midi',s:'cc',n:71,l:'Resonance'},{t:'midi',s:'cc',n:91,l:'Reverb'},{t:'midi',s:'cc',n:93,l:'Chorus'},
+   {t:'midi',s:'panic',l:'PANIC'}].forEach(function(a){
+    mccg.appendChild(mkPK(a.l,a.s==='cc'?'CC'+a.n:a.s,'pk-midi',a));
+  });
+
+  // LED
+  var lg=document.getElementById('pk-ledcfg');
+  addSec('LED Controls',lg);
+  ['RGB Tog','RGB Mod+','RGB Mod-','Hue+','Hue-','Sat+','Sat-','Val+','Val-'].forEach(function(l){
+    lg.appendChild(mkPK(l,'','pk-midi',{t:'hid',l:l}));
+  });
+
+  // ALT REPEAT
+  var ag=document.getElementById('pk-altrep');
+  addSec('Alt Repeat',ag);ag.appendChild(mkPK('Alt Rep','','pk-sd',{t:'hid',l:'Alt Rep'}));
+
+  // COMBO
+  var cg=document.getElementById('pk-combo');
+  addSec('Combo On/Off',cg);
+  ['Combo On','Combo Off','Combo Tog'].forEach(function(l){cg.appendChild(mkPK(l,'','pk-obs',{t:'hid',l:l}));});
+
+  updMacroPicker();
+}
+function updMacroPicker(){
+  var mg=document.getElementById('pk-macro');mg.innerHTML='';
+  addSec('Macros',mg);
+  MACROS.forEach(function(m,i){mg.appendChild(mkPK(m.id,m.name,'pk-mac',{t:'macro',idx:i,l:m.id}));});
+  var tg=document.getElementById('pk-td');tg.innerHTML='';
+  addSec('Tap-Dance',tg);
+  TAPDANCES.forEach(function(td,i){tg.appendChild(mkPK(td.id,td.name,'pk-td',{t:'td',idx:i,l:td.id}));});
+}
+
+// ══════════════════════════════════════════
+// BANK EVENTS
+// ══════════════════════════════════════════
+function initBankEvents(){
+  document.getElementById('sel-enc').addEventListener('change',function(){presets[actP].enc=parseInt(this.value);renderBoard();saveH();});
+  document.getElementById('sel-padl').addEventListener('change',function(){presets[actP].padL=parseInt(this.value);renderBoard();saveH();});
+  document.getElementById('sel-mat').addEventListener('change',function(){presets[actP].mat=parseInt(this.value);renderBoard();saveH();});
+  document.getElementById('sel-padr').addEventListener('change',function(){presets[actP].padR=parseInt(this.value);renderBoard();saveH();});
+  ['enc-rename','padl-rename','mat-rename','padr-rename'].forEach(function(id){
+    document.getElementById('bico-'+id).addEventListener('click',function(){renameBank(id.replace('-rename','').replace('padl','padL').replace('padr','padR').replace('mat','mat').replace('enc','enc'));});
+  });
+  document.getElementById('bico-enc-del').addEventListener('click',function(){delBank('enc');});
+  document.getElementById('bico-padl-del').addEventListener('click',function(){delBank('padL');});
+  document.getElementById('bico-mat-del').addEventListener('click',function(){delBank('mat');});
+  document.getElementById('bico-padr-del').addEventListener('click',function(){delBank('padR');});
+  document.getElementById('btn-add-enc-bank').addEventListener('click',function(){addBank('enc');});
+  document.getElementById('btn-add-padl-bank').addEventListener('click',function(){addBank('padL');});
+  document.getElementById('btn-add-mat-bank').addEventListener('click',function(){addBank('mat');});
+  document.getElementById('btn-add-padr-bank').addEventListener('click',function(){addBank('padR');});
+}
+async function renameBank(sec){
+  var bIdx=presets[actP][sec];
+  if(bIdx<8){toast('Bank default tidak bisa direname. Edit isi untuk auto-clone.','warn');return;}
+  var n=await showModal('Rename Bank','Nama baru:',BN[sec][bIdx]);
+  if(n&&n.trim()){BN[sec][bIdx]=n.trim();updBankSels();renderBoard();saveH();}
+}
+async function delBank(sec){
+  var bIdx=presets[actP][sec];
+  if(bIdx<8){toast('Bank default tidak bisa dihapus!','err');return;}
+  var c=await showModal('Hapus Bank','Ketik HAPUS untuk konfirmasi:','');
+  if(c!=='HAPUS'){toast('Dibatalkan','');return;}
+  presets.forEach(function(p){if(p[sec]===bIdx)p[sec]=0;else if(p[sec]>bIdx)p[sec]--;});
+  if(sec==='enc')ENC.splice(bIdx,1);else MAT.splice(bIdx,1);
+  BN[sec].splice(bIdx,1);
+  updBankSels();renderBoard();saveH();toast('Bank dihapus','ok');
+}
+async function addBank(sec){
+  var n=await showModal('Bank Baru','Nama bank:','Custom Bank');
+  if(!n||!n.trim())return;
+  var empty=sec==='enc'?[{ccw:'-',cw:'-',clk:'-'},{ccw:'-',cw:'-',clk:'-'},{ccw:'-',cw:'-',clk:'-'},{ccw:'-',cw:'-',clk:'-'}]:Array.from({length:16},function(){return null});
+  if(sec==='enc')ENC.push(empty);else MAT.push(empty);
+  BN[sec].push(n.trim());
+  presets[actP][sec]=BN[sec].length-1;
+  updBankSels();renderBoard();saveH();toast('Bank baru dibuat','ok');
+}
+function initEncClicks(){
+  for(var i=0;i<4;i++){
+    ['ccw','clk','cw'].forEach(function(part){
+      var el=document.getElementById('k-enc-'+i+'-'+part);if(!el)return;
+      (function(ei,pt){el.addEventListener('click',function(){selKey('enc',ei,pt,0);});})(i,part);
     });
   }
+}
+function initPresetEvents(){
+  document.getElementById('btn-add-preset').addEventListener('click',async function(){
+    if(presets.length>=8){toast('Maksimal 8 preset!','err');return;}
+    var nm=await showModal('Preset Baru','Nama preset:','Preset '+(presets.length+1));
+    if(!nm||!nm.trim())return;
+    presets.push({name:nm.trim(),padL:0,mat:0,padR:0,enc:0});
+    actP=presets.length-1;renderPresets();updBankSels();renderBoard();saveH();
+  });
+  document.getElementById('btn-rename-preset').addEventListener('click',async function(){
+    var nm=await showModal('Rename Preset','Nama baru:',presets[actP].name);
+    if(!nm||!nm.trim())return;presets[actP].name=nm.trim();renderPresets();renderBoard();saveH();toast('Preset direname','ok');
+  });
+  document.getElementById('btn-del-preset').addEventListener('click',async function(){
+    if(presets.length<=1){toast('Minimal 1 preset!','err');return;}
+    var c=await showModal('Hapus Preset','Ketik HAPUS untuk konfirmasi:','');
+    if(c!=='HAPUS')return;
+    presets.splice(actP,1);if(actP>=presets.length)actP=presets.length-1;
+    renderPresets();updBankSels();renderBoard();saveH();toast('Preset dihapus','ok');
+  });
+}
+
+// ══════════════════════════════════════════
+// MACRO EDITOR
+// ══════════════════════════════════════════
+function renderMacros(){
+  var c=document.getElementById('macro-container');c.innerHTML='';
+  MACROS.forEach(function(m,mi){
+    var card=document.createElement('div');card.className='card';
+    var seqHTML='';
+    m.steps.forEach(function(s,si){
+      var ico=s.type==='delay'?'⏱':s.type==='text'?'📝':'⌨';
+      var lbl=s.type==='delay'?'Wait '+s.val+'ms':s.val;
+      var cls=s.type==='delay'?'chip-delay':s.type==='key'?'chip-key':'chip-text';
+      seqHTML+='<div class="chip '+cls+'">'+ico+' '+lbl+' <span class="chip-del" data-mi="'+mi+'" data-si="'+si+'" title="Hapus">✕</span></div>';
+    });
+    if(!m.steps.length)seqHTML='<span style="font-size:9px;color:var(--muted);font-style:italic;padding:4px">Sequence kosong</span>';
+    card.innerHTML=
+      '<div class="card-h"><div class="cid cid-m">'+m.id+'</div>'+
+      '<input class="name-inp" value="'+m.name+'" data-mi="'+mi+'" placeholder="Nama macro...">'+
+      '<button class="btn btn-amber" style="font-size:9px;padding:3px 7px" data-dup="'+mi+'" title="Duplikat">⧉</button>'+
+      '<button class="btn btn-red" style="font-size:9px;padding:3px 7px" data-rm="'+mi+'" title="Hapus Macro">🗑</button></div>'+
+      '<div class="card-b">'+
+      '<div class="seqbox" id="seq-'+mi+'">'+seqHTML+'</div>'+
+      '<div class="crow">'+
+      '<select class="csel" id="mt-'+mi+'"><option value="text">📝 Ketik Teks</option><option value="key">⌨ Tekan Tombol (Fisik)</option><option value="action">🕹️ Virtual Action (Picker)</option><option value="delay">⏱ Delay (ms)</option></select>'+
+      '<input class="cinp" id="mv-'+mi+'" placeholder="Teks / Ctrl+C / 200" style="flex:1">'+
+      '<button class="btn btn-accent" style="font-size:10px;padding:4px 10px" data-addm="'+mi+'">+ Add</button></div>'+
+      '<div style="font-size:8px;color:var(--muted);margin-top:4px">💡 Pilih type "Tekan Tombol" → klik field → tekan keyboard. Pilih "Virtual Action" → klik input → pilih aksi dari Picker di bawah.</div>'+
+      '</div>';
+    c.appendChild(card);
+  });
+
+  c.querySelectorAll('.chip-del').forEach(function(el){
+    el.addEventListener('click',function(e){e.stopPropagation();var mi=parseInt(this.dataset.mi),si=parseInt(this.dataset.si);MACROS[mi].steps.splice(si,1);renderMacros();saveH();});
+  });
+  c.querySelectorAll('[data-addm]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var mi=parseInt(this.dataset.addm);
+      var type=document.getElementById('mt-'+mi).value;
+      var val=document.getElementById('mv-'+mi).value.trim();
+      if(!val){toast('Isi nilai aksi!','err');return;}
+      MACROS[mi].steps.push({type:type,val:val});
+      document.getElementById('mv-'+mi).value='';
+      clearFocusTarget();
+      renderMacros();saveH();
+    });
+  });
+  c.querySelectorAll('[data-rm]').forEach(function(el){
+    el.addEventListener('click',async function(){
+      if(MACROS.length<=1){toast('Minimal 1 macro!','err');return;}
+      var mi=parseInt(this.dataset.rm);
+      var v=await showModal('Hapus Macro','Ketik HAPUS untuk konfirmasi:','');
+      if(v==='HAPUS'){MACROS.splice(mi,1);// re-id
+        MACROS.forEach(function(m,i){m.id='M'+i;});renderMacros();updMacroPicker();saveH();toast('Macro dihapus','ok');}
+    });
+  });
+  c.querySelectorAll('[data-dup]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var mi=parseInt(this.dataset.dup);
+      var clone=JSON.parse(JSON.stringify(MACROS[mi]));
+      clone.name=clone.name+' (copy)';clone.id='M'+MACROS.length;
+      MACROS.push(clone);renderMacros();updMacroPicker();saveH();toast('Macro diduplikat','ok');
+    });
+  });
+  c.querySelectorAll('.name-inp[data-mi]').forEach(function(el){
+    el.addEventListener('change',function(){MACROS[parseInt(this.dataset.mi)].name=this.value;updMacroPicker();saveH();});
+  });
+  // bind input behavior based on type
+  c.querySelectorAll('.cinp[id^="mv-"]').forEach(function(inp){
+    var mi=inp.id.split('-')[1];
+    grabKeyOnInput(inp); // fallback for physical key
+    inp.addEventListener('focus', function() {
+      var typeSel = document.getElementById('mt-'+mi);
+      if(typeSel.value === 'action') {
+        setFocusTarget({type:'macroInp', mi:mi}, this);
+      } else {
+        clearFocusTarget();
+      }
+    });
+  });
+  // dropdown change
+  c.querySelectorAll('.csel[id^="mt-"]').forEach(function(sel){
+    sel.addEventListener('change', function() {
+      var mi = this.id.split('-')[1];
+      var inp = document.getElementById('mv-'+mi);
+      inp.value = '';
+      if(this.value === 'action') {
+        inp.readOnly = true;
+        inp.placeholder = 'Klik ini, lalu pilih dari Picker bawah';
+      } else {
+        inp.readOnly = false;
+        clearFocusTarget();
+        inp.placeholder = 'Ketik input / Tekan keyboard...';
+      }
+    });
+  });
+
+  document.getElementById('btn-add-macro').onclick=function(){
+    var id='M'+MACROS.length;MACROS.push({id:id,name:'Macro '+(MACROS.length+1),steps:[]});
+    renderMacros();updMacroPicker();saveH();toast('Macro baru dibuat','ok');
+    setTimeout(function(){document.getElementById('macro-container').lastChild.scrollIntoView({behavior:'smooth'});},100);
+  };
+}
+
+// ══════════════════════════════════════════
+// TAP-DANCE EDITOR
+// ══════════════════════════════════════════
+function renderTD(){
+  var c=document.getElementById('td-container');c.innerHTML='';
+  TAPDANCES.forEach(function(td,i){
+    var card=document.createElement('div');card.className='card';
+    var slot=function(prop,lbl){
+      var v=td[prop];
+      return'<div class="td-cell"><label>'+lbl+'</label>'+
+        '<div class="td-val '+(v?'':'td-empty')+'" data-tdi="'+i+'" data-prop="'+prop+'">'+(v||'Klik slot, lalu tekan Picker Bawah')+'</div></div>';
+    };
+    card.innerHTML='<div class="card-h"><div class="cid cid-t">'+td.id+'</div>'+
+      '<input class="name-inp" value="'+td.name+'" data-tdi="'+i+'" placeholder="Nama...">'+
+      '<span style="font-size:9px;color:var(--muted);margin-left:auto">Term:</span>'+
+      '<input type="number" class="cinp" style="width:55px;font-size:10px" value="'+td.term+'" min="50" max="2000" data-term="'+i+'">'+
+      '<span style="font-size:9px;color:var(--muted)">ms</span>'+
+      '<button class="btn btn-amber" style="font-size:9px;padding:3px 6px" data-dup-td="'+i+'" title="Duplikat">⧉</button>'+
+      '<button class="btn btn-red" style="font-size:9px;padding:3px 6px" data-rm-td="'+i+'" title="Hapus">🗑</button></div>'+
+      '<div class="card-b"><div class="td-grid">'+
+      slot('tap','On Tap (ketuk sekali)')+slot('hold','On Hold (tahan)')+
+      slot('double','On Double Tap (2x)')+slot('taphold','On Tap + Hold')+
+      '</div></div>';
+    c.appendChild(card);
+  });
+
+  c.querySelectorAll('.td-val[data-prop]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var i=parseInt(this.dataset.tdi), prop=this.dataset.prop;
+      setFocusTarget({type:'tdSlot', tdi:i, prop:prop}, this);
+    });
+  });
+  c.querySelectorAll('.name-inp[data-tdi]').forEach(function(el){
+    el.addEventListener('change',function(){TAPDANCES[parseInt(this.dataset.tdi)].name=this.value;updMacroPicker();saveH();});
+  });
+  c.querySelectorAll('[data-term]').forEach(function(el){
+    el.addEventListener('change',function(){TAPDANCES[parseInt(this.dataset.term)].term=parseInt(this.value)||200;saveH();});
+  });
+  c.querySelectorAll('[data-rm-td]').forEach(function(el){
+    el.addEventListener('click',async function(){
+      if(TAPDANCES.length<=1){toast('Minimal 1 tap-dance!','err');return;}
+      var i=parseInt(this.dataset.rmTd||this.getAttribute('data-rm-td'));
+      var v=await showModal('Hapus Tap-Dance','Ketik HAPUS:','');
+      if(v==='HAPUS'){TAPDANCES.splice(i,1);TAPDANCES.forEach(function(td,j){td.id='TD'+j;});renderTD();updMacroPicker();saveH();toast('Tap-Dance dihapus','ok');}
+    });
+  });
+  c.querySelectorAll('[data-dup-td]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var i=parseInt(this.getAttribute('data-dup-td'));
+      var clone=JSON.parse(JSON.stringify(TAPDANCES[i]));
+      clone.name=clone.name+' (copy)';clone.id='TD'+TAPDANCES.length;
+      TAPDANCES.push(clone);renderTD();updMacroPicker();saveH();toast('Tap-Dance diduplikat','ok');
+    });
+  });
+
+  document.getElementById('btn-add-td').onclick=function(){
+    var id='TD'+TAPDANCES.length;TAPDANCES.push({id:id,name:'Tap-Dance '+(TAPDANCES.length+1),tap:null,hold:null,double:null,taphold:null,term:200});
+    renderTD();updMacroPicker();saveH();toast('Tap-Dance baru dibuat','ok');
+    setTimeout(function(){document.getElementById('td-container').lastChild.scrollIntoView({behavior:'smooth'});},100);
+  };
+}
+
+// ══════════════════════════════════════════
+// COMBOS EDITOR
+// ══════════════════════════════════════════
+function renderCombos(){
+  var c=document.getElementById('combos-container');c.innerHTML='';
+  COMBOS.forEach(function(cb,ci){
+    var card=document.createElement('div');card.className='card';
+    var ks='';
+    for(var k=0;k<4;k++){
+      var f=cb.keys[k];
+      ks+='<div class="cslot '+(f?'has':'')+'" data-ci="'+ci+'" data-k="'+k+'" title="Klik untuk fokus">'+(f||'K'+(k+1))+'</div>';
+    }
+    card.innerHTML='<div class="card-h"><div class="cid cid-c">'+cb.id+'</div>'+
+      '<input class="name-inp" value="'+cb.name+'" data-ci="'+ci+'">'+
+      '<button class="btn btn-amber" style="font-size:9px;padding:3px 6px" data-dup-cb="'+ci+'" title="Duplikat">⧉</button>'+
+      '<button class="btn btn-red" style="font-size:9px;padding:3px 6px" data-rm-cb="'+ci+'" title="Hapus">🗑</button></div>'+
+      '<div class="card-b"><div class="combo-row">'+ks+
+      '<div class="carrow">→</div>'+
+      '<div class="caslot" data-act="'+ci+'" title="Klik untuk fokus">⚡ '+(cb.action||'Output Key')+'</div></div>'+
+      '</div>';
+    c.appendChild(card);
+  });
+
+  c.querySelectorAll('.cslot[data-ci]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var ci=parseInt(this.dataset.ci), k=parseInt(this.dataset.k);
+      setFocusTarget({type: 'comboKey', ci: ci, k: k}, this);
+    });
+  });
+  c.querySelectorAll('[data-act]').forEach(function(el){
+    el.addEventListener('click', function(){
+      var ci=parseInt(this.dataset.act);
+      setFocusTarget({type: 'comboAct', ci: ci}, this);
+    });
+  });
+  c.querySelectorAll('.name-inp[data-ci]').forEach(function(el){
+    el.addEventListener('change',function(){COMBOS[parseInt(this.dataset.ci)].name=this.value;saveH();});
+  });
+  c.querySelectorAll('[data-rm-cb]').forEach(function(el){
+    el.addEventListener('click',async function(){
+      if(COMBOS.length<=1){toast('Minimal 1 combo!','err');return;}
+      var i=parseInt(this.getAttribute('data-rm-cb'));
+      var v=await showModal('Hapus Combo','Ketik HAPUS:','');
+      if(v==='HAPUS'){COMBOS.splice(i,1);COMBOS.forEach(function(cb,j){cb.id='CB'+j;});renderCombos();saveH();toast('Combo dihapus','ok');}
+    });
+  });
+  c.querySelectorAll('[data-dup-cb]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var i=parseInt(this.getAttribute('data-dup-cb'));
+      var clone=JSON.parse(JSON.stringify(COMBOS[i]));
+      clone.name=clone.name+' (copy)';clone.id='CB'+COMBOS.length;
+      COMBOS.push(clone);renderCombos();saveH();toast('Combo diduplikat','ok');
+    });
+  });
+
+  document.getElementById('btn-add-combo').onclick=function(){
+    var id='CB'+COMBOS.length;COMBOS.push({id:id,name:'Combo '+(COMBOS.length+1),keys:[],action:null});
+    renderCombos();saveH();toast('Combo baru dibuat','ok');
+    setTimeout(function(){document.getElementById('combos-container').lastChild.scrollIntoView({behavior:'smooth'});},100);
+  };
+}
+
+// ══════════════════════════════════════════
+// ALT REPEAT EDITOR
+// ══════════════════════════════════════════
+function renderAR(){
+  var c=document.getElementById('ar-container');c.innerHTML='';
+  var grid=document.createElement('div');grid.className='ar-grid';
+  ALTREPEAT.forEach(function(ar,i){
+    var box=document.createElement('div');box.className='ar-rule';
+    box.innerHTML=
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px">'+
+      '<input type="checkbox" '+(ar.enabled?'checked':'')+' data-aren="'+i+'" style="accent-color:var(--accent);width:14px;height:14px">'+
+      '<span style="font-size:10px;font-weight:700;font-family:\'JetBrains Mono\',monospace;color:var(--accent2)">'+ar.id+'</span>'+
+      '<input class="name-inp" value="'+ar.name+'" data-arn="'+i+'" style="font-size:10px;flex:1">'+
+      '<button class="btn btn-red" style="font-size:8px;padding:2px 5px" data-rm-ar="'+i+'" title="Hapus">🗑</button></div>'+
+      '<div class="ar-fs">'+
+      '<div class="ar-f"><label>Last Key</label><input class="cinp" value="'+ar.lastKey+'" placeholder="Tekan tombol..." data-arlk="'+i+'" style="width:100%;font-size:10px"></div>'+
+      '<div class="ar-f"><label>Alt Key</label><input class="cinp" value="'+ar.altKey+'" placeholder="Tekan tombol..." data-arak="'+i+'" style="width:100%;font-size:10px"></div>'+
+      '</div>'+
+      '<div class="arcr">'+
+      '<label class="arck"><input type="checkbox" '+(ar.bidirectional?'checked':'')+' data-arbi="'+i+'"> Bidirectional</label>'+
+      '<label class="arck"><input type="checkbox" '+(ar.defaultAlt?'checked':'')+' data-arda="'+i+'"> Default Alt</label>'+
+      '<label class="arck"><input type="checkbox" '+(ar.ignoreMod?'checked':'')+' data-arim="'+i+'"> Ignore Mod</label>'+
+      '</div>';
+    grid.appendChild(box);
+  });
+  c.appendChild(grid);
+
+  // Bind grabbers
+  c.querySelectorAll('[data-arlk],[data-arak]').forEach(function(el){grabKeyOnInput(el);});
+
+  c.querySelectorAll('[data-aren]').forEach(function(el){el.addEventListener('change',function(){ALTREPEAT[parseInt(this.dataset.aren)].enabled=this.checked;saveH();});});
+  c.querySelectorAll('[data-arn]').forEach(function(el){el.addEventListener('change',function(){ALTREPEAT[parseInt(this.dataset.arn)].name=this.value;saveH();});});
+  c.querySelectorAll('[data-arlk]').forEach(function(el){el.addEventListener('input',function(){ALTREPEAT[parseInt(this.dataset.arlk)].lastKey=this.value;saveH();});});
+  c.querySelectorAll('[data-arak]').forEach(function(el){el.addEventListener('input',function(){ALTREPEAT[parseInt(this.dataset.arak)].altKey=this.value;saveH();});});
+  c.querySelectorAll('[data-arbi]').forEach(function(el){el.addEventListener('change',function(){ALTREPEAT[parseInt(this.dataset.arbi)].bidirectional=this.checked;saveH();});});
+  c.querySelectorAll('[data-arda]').forEach(function(el){el.addEventListener('change',function(){ALTREPEAT[parseInt(this.dataset.arda)].defaultAlt=this.checked;saveH();});});
+  c.querySelectorAll('[data-arim]').forEach(function(el){el.addEventListener('change',function(){ALTREPEAT[parseInt(this.dataset.arim)].ignoreMod=this.checked;saveH();});});
+  c.querySelectorAll('[data-rm-ar]').forEach(function(el){
+    el.addEventListener('click',async function(){
+      if(ALTREPEAT.length<=1){toast('Minimal 1 rule!','err');return;}
+      var i=parseInt(this.getAttribute('data-rm-ar'));
+      var v=await showModal('Hapus Rule','Ketik HAPUS:','');
+      if(v==='HAPUS'){ALTREPEAT.splice(i,1);ALTREPEAT.forEach(function(ar,j){ar.id='AR'+j;});renderAR();saveH();toast('Rule dihapus','ok');}
+    });
+  });
+
+  document.getElementById('btn-add-ar').onclick=function(){
+    var id='AR'+ALTREPEAT.length;
+    ALTREPEAT.push({id:id,name:'Rule '+(ALTREPEAT.length+1),enabled:false,lastKey:'',altKey:'',bidirectional:false,defaultAlt:false,ignoreMod:false});
+    renderAR();saveH();toast('Rule baru dibuat','ok');
+  };
+}
+
+// ══════════════════════════════════════════
+// MIDI NOTE EDITOR (C2 - C4)
+// ══════════════════════════════════════════
+function renderMIDINote(){
+  var c = document.getElementById('midinote-container');
+  c.innerHTML = '';
+
+  // Header settings
+  var hdr = document.createElement('div');
+  hdr.style.cssText = 'display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;flex-wrap:wrap';
+  hdr.innerHTML =
+    '<div class="midi-ch-sel"><label>MIDI Channel:</label>' +
+    '<select class="csel" id="midi-ch-sel" style="width:60px">' +
+    Array.from({length:16}, function(_,i){return '<option value="'+(i+1)+'"'+(MIDI_CFG.channel===i+1?' selected':'')+'>Ch '+(i+1)+'</option>'}).join('') +
+    '</select></div>' +
+    '<div class="midi-ch-sel"><label>Default Velocity:</label>' +
+    '<input type="range" min="1" max="127" value="'+MIDI_CFG.velocity+'" id="midi-vel" style="width:90px;accent-color:var(--cyan)">' +
+    '<span id="midi-vel-lbl" style="font-size:10px;font-weight:700;color:var(--cyan);min-width:28px">'+MIDI_CFG.velocity+'</span></div>' +
+    '<div class="midi-ch-sel"><label title="Menggeser note pada virtual picker keyboard">Global Transpose:</label>' +
+    '<input type="number" class="cinp" id="midi-transpose" value="'+(MIDI_CFG.transpose||0)+'" style="width:55px">' +
+    '</div>';
+  c.appendChild(hdr);
+
+  var mainLayout = document.createElement('div');
+  mainLayout.style.display = 'flex';
+  mainLayout.style.gap = '10px';
+  mainLayout.style.alignItems = 'flex-start';
+  mainLayout.style.flexWrap = 'wrap';
+
+  // Grid Box (Note Map)
+  var gridCard = document.createElement('div');
+  gridCard.className = 'midi-card';
+  gridCard.style.flex = '2';
+  gridCard.style.minWidth = '300px';
+  gridCard.innerHTML = '<h4>🎹 Note Map (C2–B4)</h4><div style="font-size:8px;color:var(--muted);margin-bottom:12px">Klik note untuk fokus dan edit propertinya (bukan untuk mapping)</div>';
+
+  var noteGridContainer = document.createElement('div');
+  var trans = MIDI_CFG.transpose || 0;
+
+  for(var oct=2; oct<=4; oct++){
+    var rowWrapper = document.createElement('div');
+    rowWrapper.style.display = 'flex'; 
+    rowWrapper.style.alignItems = 'center';
+    rowWrapper.style.gap = '6px'; 
+    rowWrapper.style.marginBottom = '3px';
+
+    var lbl = document.createElement('div');
+    lbl.style.cssText = 'width:30px; font-size:10px; font-weight:700; color:var(--muted)';
+    lbl.textContent = 'Oct ' + oct;
+    rowWrapper.appendChild(lbl);
+
+    var octGrid = document.createElement('div');
+    octGrid.className = 'midi-octave-row'; 
+    octGrid.style.flex = '1';
+
+    for(var i=0; i<12; i++){
+      var n = 12 + (oct * 12) + i;
+      var finalNote = n + trans;
+      var nn = noteN(finalNote);
+      var isSharp = nn.includes('#');
+
+      if(finalNote < 0 || finalNote > 127) {
+        octGrid.appendChild(document.createElement('div'));
+        continue;
+      }
+
+      var el = document.createElement('div');
+      el.className = 'midi-note' + (isSharp ? ' sharp' : '') + (selectedMidiEditNote === finalNote ? ' sel' : '');
+      el.innerHTML = nn + '<br><span style="font-size:6px;font-weight:400;color:var(--muted)">N'+finalNote+'</span>';
+
+      (function(fn){
+        el.addEventListener('click',function(){
+          selectedMidiEditNote = fn;
+          renderMIDINote(); 
+        });
+      })(finalNote);
+
+      octGrid.appendChild(el);
+    }
+    rowWrapper.appendChild(octGrid);
+    noteGridContainer.appendChild(rowWrapper);
+  }
+  gridCard.appendChild(noteGridContainer);
+  mainLayout.appendChild(gridCard);
+
+  // Edit Box
+  var editCard = document.createElement('div');
+  editCard.className = 'midi-card';
+  editCard.style.flex = '1';
+  editCard.style.minWidth = '220px';
+
+  if (selectedMidiEditNote !== null) {
+    var cObj = (MIDI_CFG.customNotes && MIDI_CFG.customNotes[selectedMidiEditNote]) ? MIDI_CFG.customNotes[selectedMidiEditNote] : {};
+    var cName = cObj.name || '';
+    var cVel = cObj.vel || '';
+    var cTrans = cObj.trans || 0;
+
+    editCard.innerHTML = '<h4>✏️ Edit Note Properti</h4>' +
+      '<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">' + noteN(selectedMidiEditNote) + ' (N' + selectedMidiEditNote + ')</div>' +
+      '<div class="ar-f" style="margin-bottom:8px"><label>Custom Name</label><input class="cinp" id="en-name" value="'+cName+'" placeholder="e.g. Kick Drum" style="width:100%"></div>' +
+      '<div class="ar-f" style="margin-bottom:8px"><label>Velocity Override (0 = default)</label><input type="number" class="cinp" id="en-vel" value="'+cVel+'" placeholder="0-127" style="width:100%"></div>' +
+      '<div class="ar-f" style="margin-bottom:8px"><label>Transpose Override (Semi)</label><input type="number" class="cinp" id="en-trans" value="'+cTrans+'" style="width:100%"></div>' +
+      '<button class="btn btn-green" id="btn-save-note" style="width:100%;justify-content:center;margin-top:5px">Save Properti Note</button>';
+  } else {
+    editCard.innerHTML = '<h4>✏️ Edit Note</h4><div style="font-size:10px;color:var(--muted)">Pilih note di grid untuk mengedit properti kustom (nama, velocity, transpose independen).</div>';
+  }
+
+  mainLayout.appendChild(editCard);
+  c.appendChild(mainLayout);
+
+  // Listeners Event Note
+  document.getElementById('midi-ch-sel').addEventListener('change',function(){MIDI_CFG.channel=parseInt(this.value);saveH();});
+  document.getElementById('midi-vel').addEventListener('input',function(){MIDI_CFG.velocity=parseInt(this.value);document.getElementById('midi-vel-lbl').textContent=this.value;saveH();});
+  document.getElementById('midi-transpose').addEventListener('change',function(){
+    MIDI_CFG.transpose=parseInt(this.value)||0;
+    saveH();
+    renderMIDINote(); 
+    updMidiPicker(); 
+  });
+
+  if (selectedMidiEditNote !== null) {
+    document.getElementById('btn-save-note').onclick = function(){
+      if(!MIDI_CFG.customNotes) MIDI_CFG.customNotes = {};
+      var nn = document.getElementById('en-name').value.trim();
+      var vv = parseInt(document.getElementById('en-vel').value) || 0;
+      var tt = parseInt(document.getElementById('en-trans').value) || 0;
+      MIDI_CFG.customNotes[selectedMidiEditNote] = { name: nn, vel: vv, trans: tt };
+      saveH();
+      toast('Properti Note Tersimpan!', 'ok');
+    };
+  }
+}
+
+// ══════════════════════════════════════════
+// PROFESSIONAL MIDI CC EDITOR
+// ══════════════════════════════════════════
+function renderMIDICC(){
+  var c = document.getElementById('midicc-container');
+  c.innerHTML = '<div id="midi-cc-list"></div>';
+  renderCCList();
+
+  document.getElementById('btn-add-cc-top').onclick=async function(){
+    var n=await showModal('Tambah CC','Nomor CC (0–127):','');
+    if(!n)return;var nn=parseInt(n);if(isNaN(nn)||nn<0||nn>127){toast('CC tidak valid!','err');return;}
+    var name=await showModal('Nama CC','Nama untuk CC'+nn+':','CC '+nn);
+    MIDI_CFG.ccValues.push({cc:nn, name:name||'CC '+nn, mode:'momentary', min:0, max:127});
+    renderMIDICC(); saveH(); toast('CC '+nn+' ditambahkan','ok');
+  };
+}
+
+function renderCCList(){
+  var cl = document.getElementById('midi-cc-list');
+  if(!cl) return;
+  cl.innerHTML = '';
+  cl.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:12px; padding-bottom:20px;';
+
+  MIDI_CFG.ccValues.forEach(function(cc, i){
+    if(cc.mode===undefined) cc.mode='momentary';
+    if(cc.min===undefined) cc.min=0;
+    if(cc.max===undefined) cc.max=cc.value!==undefined ? cc.value : 127;
+
+    var card = document.createElement('div');
+    card.className = 'cc-panel';
+    card.innerHTML = `
+      <div class="cc-header">
+         <div class="cc-badge">CC ${cc.cc}</div>
+         <input class="cc-name-inp" value="${cc.name}" id="ccname-${i}" spellcheck="false" title="Ubah Nama CC">
+         <button class="bico rd" data-cc-del="${i}" title="Delete">✕</button>
+      </div>
+      <div class="cc-body">
+         <div class="cc-ctrl">
+            <label>Mode</label>
+            <select class="csel" id="ccmode-${i}">
+               <option value="momentary" ${cc.mode==='momentary'?'selected':''}>Momentary</option>
+               <option value="toggle" ${cc.mode==='toggle'?'selected':''}>Toggle</option>
+               <option value="trigger" ${cc.mode==='trigger'?'selected':''}>Trigger</option>
+            </select>
+         </div>
+         <div class="cc-ctrl-row">
+             <div class="cc-ctrl">
+                <label>Off / Min Val</label>
+                <input type="number" class="cinp" id="ccmin-${i}" value="${cc.min}" min="0" max="127">
+             </div>
+             <div class="cc-ctrl">
+                <label>On / Max Val</label>
+                <input type="number" class="cinp" id="ccmax-${i}" value="${cc.max}" min="0" max="127">
+             </div>
+         </div>
+         <button class="btn btn-accent" data-cc-assign="${i}" style="width:100%;justify-content:center;margin-top:6px;font-size:10px">⚡ Assign to Selected Key</button>
+      </div>
+    `;
+    cl.appendChild(card);
+
+    card.querySelector(`#ccname-${i}`).addEventListener('change', function(){ MIDI_CFG.ccValues[i].name = this.value; saveH(); });
+    card.querySelector(`#ccmode-${i}`).addEventListener('change', function(){ MIDI_CFG.ccValues[i].mode = this.value; saveH(); });
+    card.querySelector(`#ccmin-${i}`).addEventListener('change', function(){ MIDI_CFG.ccValues[i].min = parseInt(this.value)||0; saveH(); });
+    card.querySelector(`#ccmax-${i}`).addEventListener('change', function(){ MIDI_CFG.ccValues[i].max = parseInt(this.value)||0; saveH(); });
+    
+    card.querySelector(`[data-cc-assign="${i}"]`).addEventListener('click', function(){
+      applyAction({t:'midi', s:'cc', n:cc.cc, l:cc.name});
+      toast('Assign CC'+cc.cc+' ke key', 'ok');
+    });
+    card.querySelector(`[data-cc-del="${i}"]`).addEventListener('click', async function(){
+      var v=await showModal('Hapus CC '+cc.cc+'?','Ketik HAPUS:','');
+      if(v==='HAPUS'){ MIDI_CFG.ccValues.splice(i,1); renderCCList(); saveH(); }
+    });
+  });
+}
+
+// ══════════════════════════════════════════
+// STREAM EDITOR
+// ══════════════════════════════════════════
+function renderStream(){
+  var c=document.getElementById('stream-container');c.innerHTML='';
+  var grid=document.createElement('div');grid.className='stream-grid';
+  STREAM_APPS.forEach(function(app,ai){
+    var card=document.createElement('div');card.className='stream-app';
+    var actHTML=app.actions.map(function(act,aci){
+      return'<div class="stream-action">'+
+        '<span class="sa-key">'+act.key+'</span>'+
+        '<span class="sa-name" contenteditable="true" spellcheck="false" data-ai="'+ai+'" data-aci="'+aci+'" style="outline:none;cursor:text" title="Klik untuk rename aksi">'+act.name+'</span>'+
+        '<span class="sa-edit" data-assign-ai="'+ai+'" data-assign-aci="'+aci+'" title="Assign ke key di keymap">→Key</span>'+
+        '<span class="sa-edit" data-del-ai="'+ai+'" data-del-aci="'+aci+'" style="color:var(--red)" title="Hapus aksi">✕</span>'+
+        '</div>';
+    }).join('');
+    card.innerHTML=
+      '<div class="stream-app-h">'+
+      '<div class="stream-app-ico" style="background:'+app.color+'20;border:1px solid '+app.color+'40">'+app.icon+'</div>'+
+      '<span style="font-size:11px;font-weight:700;flex:1;cursor:text" contenteditable="true" spellcheck="false" data-app-name="'+ai+'" title="Klik untuk rename app">'+app.name+'</span>'+
+      '<button class="btn btn-green" style="font-size:8px;padding:2px 6px" data-add-act="'+ai+'">+ Aksi</button>'+
+      '<button class="btn btn-red" style="font-size:8px;padding:2px 6px" data-del-app="'+ai+'" title="Hapus App">🗑</button></div>'+
+      '<div class="stream-app-b">'+actHTML+'</div>';
+    grid.appendChild(card);
+  });
+  c.appendChild(grid);
+
+  c.querySelectorAll('[data-app-name]').forEach(function(el){
+    el.addEventListener('input',function(){STREAM_APPS[parseInt(this.dataset.appName)].name=this.textContent;saveH();});
+  });
+  c.querySelectorAll('[data-ai][data-aci]').forEach(function(el){
+    el.addEventListener('input',function(){STREAM_APPS[parseInt(this.dataset.ai)].actions[parseInt(this.dataset.aci)].name=this.textContent;saveH();});
+  });
+  c.querySelectorAll('[data-assign-ai]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var ai=parseInt(this.dataset.assignAi),aci=parseInt(this.dataset.assignAci);
+      var act=STREAM_APPS[ai].actions[aci];
+      applyAction({t:'stream',l:act.name,code:act.key});toast('Assign "'+act.name+'" ke key','ok');
+    });
+  });
+  c.querySelectorAll('[data-del-aci]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var ai=parseInt(this.dataset.delAi),aci=parseInt(this.dataset.delAci);
+      STREAM_APPS[ai].actions.splice(aci,1);renderStream();saveH();
+    });
+  });
+  c.querySelectorAll('[data-del-app]').forEach(function(el){
+    el.addEventListener('click',async function(){
+      if(STREAM_APPS.length<=1){toast('Minimal 1 app!','err');return;}
+      var ai=parseInt(this.dataset.delApp);
+      var v=await showModal('Hapus App','Ketik HAPUS:','');
+      if(v==='HAPUS'){STREAM_APPS.splice(ai,1);renderStream();saveH();toast('App dihapus','ok');}
+    });
+  });
+  c.querySelectorAll('[data-add-act]').forEach(function(el){
+    el.addEventListener('click',async function(){
+      var ai=parseInt(this.dataset.addAct);
+      var usedKeys=STREAM_APPS.flatMap(function(a){return a.actions.map(function(ac){return ac.key;});});
+      var allFKeys=['F13','F14','F15','F16','F17','F18','F19','F20','F21','F22','F23','F24'];
+      var nextKey=allFKeys.find(function(f){return!usedKeys.includes(f);})||'F13';
+      var name=await showModal('Nama Aksi','Nama untuk aksi baru (key: '+nextKey+'):','New Action');
+      if(!name)return;
+      STREAM_APPS[ai].actions.push({key:nextKey,name:name});
+      renderStream();saveH();toast('Aksi ditambahkan ('+nextKey+')','ok');
+    });
+  });
+
+  document.getElementById('btn-add-stream-app').onclick=async function(){
+    var name=await showModal('Nama App','Nama aplikasi baru:','My App');
+    if(!name)return;
+    var emoji=await showModal('Ikon Emoji','Emoji ikon (1 karakter):','🎯');
+    STREAM_APPS.push({name:name||'My App',icon:emoji||'🎯',color:'#6c63ff',actions:[]});
+    renderStream();saveH();toast('App baru ditambahkan','ok');
+  };
+}
+
+// ══════════════════════════════════════════
+// LED EDITOR
+// ══════════════════════════════════════════
+function renderLED(){
+  var c=document.getElementById('led-container');
+  c.innerHTML=
+    '<div class="led-grid">'+
+    '<div class="led-card"><h4>Mode LED</h4>'+
+    '<div class="mbtns">'+
+    '<button class="mbtn '+(LED.mode==='single'?'on':'')+'" id="lm-single">Single</button>'+
+    '<button class="mbtn '+(LED.mode==='fade'?'on':'')+'" id="lm-fade">Fade</button>'+
+    '<button class="mbtn '+(LED.mode==='responsive'?'on':'')+'" id="lm-resp">Responsive</button>'+
+    '</div>'+
+    '<div style="margin-top:10px"><div class="lr"><label>Brightness</label>'+
+    '<input type="range" min="0" max="100" value="'+LED.brightness+'" id="led-bright">'+
+    '<span class="lv" id="lv-bright">'+LED.brightness+'%</span></div></div></div>'+
+    '<div class="led-card"><h4>Single Color</h4>'+
+    '<div class="lr"><label>Hue</label><input type="range" min="0" max="360" value="'+LED.hue+'" id="led-hue"><span class="lv" id="lv-hue">'+LED.hue+'°</span></div>'+
+    '<div class="lr"><label>Saturation</label><input type="range" min="0" max="100" value="'+LED.sat+'" id="led-sat"><span class="lv" id="lv-sat">'+LED.sat+'%</span></div>'+
+    '<div class="lr"><label>Preview</label><div id="led-prev" style="width:50px;height:20px;border-radius:4px;border:1px solid var(--border2);background:hsl('+LED.hue+','+LED.sat+'%,45%)"></div></div></div>'+
+    '<div class="led-card"><h4>Responsive Mode</h4>'+
+    '<div class="lr"><label>Hit Hue</label><input type="range" min="0" max="360" value="'+LED.respHue+'" id="led-rhue"><span class="lv" id="lv-rhue">'+LED.respHue+'°</span></div>'+
+    '<div class="lr"><label>Duration</label><input type="range" min="50" max="2000" step="50" value="'+LED.respDur+'" id="led-rdur"><span class="lv" id="lv-rdur">'+LED.respDur+'ms</span></div>'+
+    '<div class="lr"><label>Random Hue</label><input type="checkbox" '+(LED.respRandom?'checked':'')+' id="led-rrand" style="accent-color:var(--accent);transform:scale(1.2)"></div></div>'+
+    '<div class="led-card"><h4>Fade / Cycle</h4>'+
+    '<div class="lr"><label>Speed</label><input type="range" min="1" max="20" value="'+LED.fadeSpeed+'" id="led-fspd"><span class="lv" id="lv-fspd">'+LED.fadeSpeed+'</span></div>'+
+    '<div style="font-size:8px;color:var(--muted)">Lebih tinggi = lebih cepat</div></div></div>';
+
+  ['single','fade','resp'].forEach(function(m){
+    document.getElementById('lm-'+m).addEventListener('click',function(){
+      LED.mode=m==='resp'?'responsive':m;
+      document.querySelectorAll('.mbtn').forEach(function(b){b.classList.remove('on');});
+      this.classList.add('on');saveH();
+    });
+  });
+  var rng=function(id,prop,unit,dp){
+    var el=document.getElementById(id);if(!el)return;
+    el.addEventListener('input',function(){
+      LED[prop]=parseFloat(this.value);
+      document.getElementById(dp).textContent=this.value+unit;
+      if(prop==='hue'||prop==='sat'){var p=document.getElementById('led-prev');if(p)p.style.background='hsl('+LED.hue+','+LED.sat+'%,45%)';}
+      saveH();
+    });
+  };
+  rng('led-bright','brightness','%','lv-bright');rng('led-hue','hue','°','lv-hue');
+  rng('led-sat','sat','%','lv-sat');rng('led-rhue','respHue','°','lv-rhue');
+  rng('led-rdur','respDur','ms','lv-rdur');rng('led-fspd','fadeSpeed','','lv-fspd');
+  var rr=document.getElementById('led-rrand');
+  if(rr)rr.addEventListener('change',function(){LED.respRandom=this.checked;saveH();});
+}
+
+// ══════════════════════════════════════════
+// WEBSERIAL
+// ══════════════════════════════════════════
+var _port=null,_writer=null;
+function initSerial(){
+  document.getElementById('btn-conn').addEventListener('click',async function(){
+    if(!('serial' in navigator)){toast('WebSerial butuh Chrome/Edge desktop!','err');return;}
+    if(_port){
+      try{await _writer.close();await _port.close();}catch(e){}
+      _port=null;_writer=null;setConnUI(false);return;
+    }
+    try{
+      _port=await navigator.serial.requestPort();
+      await _port.open({baudRate:115200});
+      _writer=_port.writable.getWriter();
+      setConnUI(true);toast('Terhubung ke device!','ok');
+    }catch(e){if(e.name!=='NotFoundError')toast('Gagal connect: '+e.message,'err');}
+  });
+  document.getElementById('btn-save').addEventListener('click',saveToDevice);
+  document.getElementById('btn-save2').addEventListener('click',saveToDevice);
+}
+async function saveToDevice(){
+  if(!_writer){toast('Belum terhubung!','err');return;}
+  var payload=JSON.stringify({presets,MAT,ENC,MACROS,TAPDANCES,COMBOS,ALTREPEAT,LED,BN,MIDI_CFG});
+  await _writer.write(new TextEncoder().encode('WCFG:SET:'+payload+'\n'));
+  setTimeout(async function(){await _writer.write(new TextEncoder().encode('WCFG:SAVE\n'));toast('Tersimpan ke device!','ok');},400);
+}
+function setConnUI(live){
+  document.getElementById('cdot').classList.toggle('live',live);
+  document.getElementById('btn-conn').textContent=live?'Disconnect':'Connect';
+  document.getElementById('btn-save').disabled=!live;
+  document.getElementById('btn-save2').disabled=!live;
+}
+
+// ══════════════════════════════════════════
+// IMPORT / EXPORT
+// ══════════════════════════════════════════
+function initIO(){
+  document.getElementById('btn-export').addEventListener('click',function(){
+    var d=JSON.stringify({presets,MAT,ENC,MACROS,TAPDANCES,COMBOS,ALTREPEAT,LED,BN,MIDI_CFG,STREAM_APPS},null,2);
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([d],{type:'application/json'}));
+    a.download='macropad_config.json';a.click();toast('Config diekspor!','ok');
+  });
+  document.getElementById('btn-import').addEventListener('click',function(){document.getElementById('file-import').click();});
+  document.getElementById('file-import').addEventListener('change',function(e){
+    var f=e.target.files[0];if(!f)return;
+    var r=new FileReader();
+    r.onload=function(ev){
+      try{restH(ev.target.result);saveH();toast('Config diimpor!','ok');}
+      catch(ex){toast('File tidak valid!','err');}
+    };
+    r.readAsText(f);e.target.value='';
+  });
+}
+
+// ══════════════════════════════════════════
+// CLEAR KEY
+// ══════════════════════════════════════════
+function initClearKey(){
+  document.getElementById('btn-clear-key').addEventListener('click',function(){applyAction({l:'Clear'});});
+}
+
+// ══════════════════════════════════════════
+// KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA'||e.target.isContentEditable)return;
+  if(e.ctrlKey&&e.key==='z'){e.preventDefault();doUndo();}
+  if(e.ctrlKey&&e.key==='y'){e.preventDefault();doRedo();}
+});
+document.getElementById('btn-undo').addEventListener('click',doUndo);
+document.getElementById('btn-redo').addEventListener('click',doRedo);
+
+// ══════════════════════════════════════════
+// MODAL EVENTS
+// ══════════════════════════════════════════
+document.getElementById('mo-ok').addEventListener('click',moOK);
+document.getElementById('mo-cancel').addEventListener('click',moCancel);
+document.getElementById('mo').addEventListener('click',function(e){if(e.target===this)moCancel();});
+
+// ══════════════════════════════════════════
+// REBUILD ALL
+// ══════════════════════════════════════════
+function rebuildAll(){
+  updBankSels();renderPresets();renderBoard();updMacroPicker();
+}
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+function init(){
+  initNavTabs();initBankEvents();initEncClicks();initPresetEvents();
+  initSerial();initIO();initClearKey();populatePicker();
+  rebuildAll();saveH();
+  toast('MacroPad Studio siap!','ok');
+}
+init();
 </script>
 </body>
 </html>
-HTMLEOF
-echo "OK"
-wc -l /home/claude/MacroPad_WebConfig/index.html
