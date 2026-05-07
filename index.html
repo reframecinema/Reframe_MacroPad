@@ -127,19 +127,6 @@ body{display:flex;flex-direction:column;height:100vh}
 .ks-row .cinp { width: 100%; } /* Agar input tidak overflow di sidebar yang lebih kecil */
 .ks-info-box { background: var(--bg); border: 1px dashed var(--border2); padding: 12px; border-radius: 6px; font-size: 10px; color: var(--muted2); line-height: 1.6; }
 
-/* ── SIDEBAR OVERLAY ── */
-#sidebar-overlay {
-  display: none;
-  position: absolute;
-  inset: 0;
-  right: 186px; /* Disesuaikan dengan lebar sidebar 186px */
-  z-index: 9;
-  background: transparent;
-}
-#sidebar-overlay.on {
-  display: block;
-}
-
 .enc-row{display:flex;align-items:center;gap:14px}
 .enc-group{position:relative;display:flex;gap:2px;padding:5px;background:var(--bg);border:1px solid var(--border);border-radius:8px}
 .enc-lbl{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-size:8px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
@@ -350,7 +337,6 @@ body{display:flex;flex-direction:column;height:100vh}
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div id="topbar">
   <div class="logo">
     <div class="logo-mark">MP</div>
@@ -381,7 +367,6 @@ body{display:flex;flex-direction:column;height:100vh}
 <div id="main">
   <div id="workspaces">
 
-    <!-- ═══ KEYMAP ═══ -->
     <div class="ws on" id="ws-keymap">
       <div id="pbar">
         <span class="pbar-label">Preset:</span>
@@ -392,7 +377,6 @@ body{display:flex;flex-direction:column;height:100vh}
         <div id="status-msg">Klik tombol → pilih aksi di bawah</div>
       </div>
 
-      <!-- KEYMAP MAIN WRAPPER -->
       <div id="keymap-main">
 
         <div id="layout-area">
@@ -460,7 +444,6 @@ body{display:flex;flex-direction:column;height:100vh}
           </div>
         </div>
 
-        <!-- SIDEBAR SETTINGS -->
         <div id="key-sidebar">
           <div class="ks-inner">
             <div class="ks-header">
@@ -492,13 +475,8 @@ body{display:flex;flex-direction:column;height:100vh}
           </div>
         </div>
 
-        <!-- SIDEBAR OVERLAY -->
-        <div id="sidebar-overlay"></div>
+      </div> </div>
 
-      </div> <!-- /keymap-main -->
-    </div>
-
-    <!-- ═══ MACROS ═══ -->
     <div class="ws" id="ws-macros">
       <div class="adv-area"><div class="adv-inner">
         <div class="adv-tip"><b>Macro Editor</b> — Urutan keystroke + delay. Pilih type, isi value, klik "+ Add". Pilih "Virtual Action" untuk assign fungsionalitas khusus dari picker di bawah.</div>
@@ -510,7 +488,6 @@ body{display:flex;flex-direction:column;height:100vh}
       </div></div>
     </div>
 
-    <!-- ═══ TAP-DANCE ═══ -->
     <div class="ws" id="ws-tapdance">
       <div class="adv-area"><div class="adv-inner">
         <div class="adv-tip"><b>Tap-Dance</b> — 1 tombol, 4 fungsi. Klik slot (hingga menyala ungu), lalu pilih aksi dari <b>Virtual Keyboard</b> di bawah.</div>
@@ -522,7 +499,6 @@ body{display:flex;flex-direction:column;height:100vh}
       </div></div>
     </div>
 
-    <!-- ═══ COMBOS ═══ -->
     <div class="ws" id="ws-combos">
       <div class="adv-area"><div class="adv-inner">
         <div class="adv-tip"><b>Combos</b> — Tekan 2–4 tombol bersamaan → aksi khusus. Klik slot K1–K4 atau Output, lalu pilih input langsung dari <b>Virtual Keyboard</b> di bawah (tanpa perlu modal).</div>
@@ -534,7 +510,6 @@ body{display:flex;flex-direction:column;height:100vh}
       </div></div>
     </div>
 
-    <!-- ═══ ALT REPEAT ═══ -->
     <div class="ws" id="ws-altrepeat">
       <div class="adv-area"><div class="adv-inner">
         <div class="adv-tip"><b>Alt Repeat Key</b> — Tombol bergantung pada key terakhir. Contoh: Ctrl+Z → Alt Repeat jadi Ctrl+Y. Tekan tombol fisik langsung di field Last Key / Alt Key.</div>
@@ -546,7 +521,6 @@ body{display:flex;flex-direction:column;height:100vh}
       </div></div>
     </div>
 
-    <!-- ═══ MIDI NOTE ═══ -->
     <div class="ws" id="ws-midinote">
       <div class="adv-area"><div class="adv-inner">
         <div class="adv-tip"><b>MIDI Note Configuration (C2–C4)</b> — Atur properti kustom pada note (seperti Custom Name, Override Velocity, & Transpose). Pilih note di Grid untuk mengeditnya.</div>
@@ -554,7 +528,6 @@ body{display:flex;flex-direction:column;height:100vh}
       </div></div>
     </div>
 
-    <!-- ═══ MIDI CC ═══ -->
     <div class="ws" id="ws-midicc">
       <div class="adv-area"><div class="adv-inner">
         <div class="adv-tip"><b>MIDI CC Configuration</b> — Konfigurasi Mode (Momentary/Toggle), Off/On Value dan Assign Control Change (CC).</div>
@@ -566,7 +539,6 @@ body{display:flex;flex-direction:column;height:100vh}
       </div></div>
     </div>
 
-    <!-- ═══ LED ═══ -->
     <div class="ws" id="ws-led">
       <div class="adv-area"><div class="adv-inner">
         <div class="adv-tip"><b>LED WS2811</b> — Konfigurasi strip LED. Mode Responsive menyalakan LED saat tombol ditekan.</div>
@@ -575,7 +547,6 @@ body{display:flex;flex-direction:column;height:100vh}
     </div>
   </div>
 
-  <!-- ═══ PICKER GLOBAL ═══ -->
   <div id="picker">
     <div id="ptabs">
       <div class="ptab on" id="ptab-basic">Keys</div>
@@ -606,7 +577,6 @@ body{display:flex;flex-direction:column;height:100vh}
   </div>
 </div>
 
-<!-- MODAL -->
 <div id="mo">
   <div class="modal">
     <h3 id="mo-title">Input</h3>
@@ -859,8 +829,6 @@ var currentSidebarObj = null;
 function openKeySidebar(loc, bName) {
   var sb = document.getElementById('key-sidebar');
   sb.classList.add('open');
-  // Tampilkan overlay
-  document.getElementById('sidebar-overlay').classList.add('on');
 
   document.getElementById('ks-title').innerText = loc;
   document.getElementById('ks-bank').innerText = bName;
@@ -899,9 +867,6 @@ function openKeySidebar(loc, bName) {
 
 function closeKeySidebar() {
   document.getElementById('key-sidebar').classList.remove('open');
-  // Sembunyikan overlay
-  document.getElementById('sidebar-overlay').classList.remove('on');
-  // Reset seleksi tombol
   selK = null;
   updSelVis();
   document.getElementById('status-msg').innerHTML = 'Klik tombol → pilih aksi di bawah';
