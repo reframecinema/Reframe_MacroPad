@@ -89,11 +89,11 @@ body{display:flex;flex-direction:column;height:100vh}
   flex-direction: column;
   gap: 14px;
   align-items: center;
-  width: max-content; /* Kunci agar background tidak memanjang kosong */
-  margin: 0 auto; /* Centering otomatis, namun rata kiri jika overflow */
+  width: max-content; 
+  margin: 0 auto; 
 }
 
-/* ── SIDEBAR (Flex Layout Terintegrasi) ── */
+/* ── SIDEBAR (Flex Layout Terintegrasi - Ukuran 2/3) ── */
 #key-sidebar {
   width: 0;
   flex-shrink: 0;
@@ -108,12 +108,12 @@ body{display:flex;flex-direction:column;height:100vh}
   box-shadow: none;
 }
 #key-sidebar.open {
-  width: 280px;
+  width: 186px; /* 2/3 dari 280px */
   border-left-width: 1px;
   box-shadow: -4px 0 15px rgba(0,0,0,0.3);
 }
 .ks-inner {
-  width: 280px;
+  width: 186px; /* 2/3 dari 280px */
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -124,7 +124,21 @@ body{display:flex;flex-direction:column;height:100vh}
 .ks-footer { padding: 12px 15px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; background: var(--bg); }
 .ks-row { display: flex; flex-direction: column; gap: 5px; }
 .ks-row label { font-size: 9px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.ks-row .cinp { width: 100%; } /* Agar input tidak overflow di sidebar yang lebih kecil */
 .ks-info-box { background: var(--bg); border: 1px dashed var(--border2); padding: 12px; border-radius: 6px; font-size: 10px; color: var(--muted2); line-height: 1.6; }
+
+/* ── SIDEBAR OVERLAY ── */
+#sidebar-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  right: 186px; /* Disesuaikan dengan lebar sidebar 186px */
+  z-index: 9;
+  background: transparent;
+}
+#sidebar-overlay.on {
+  display: block;
+}
 
 .enc-row{display:flex;align-items:center;gap:14px}
 .enc-group{position:relative;display:flex;gap:2px;padding:5px;background:var(--bg);border:1px solid var(--border);border-radius:8px}
@@ -477,6 +491,9 @@ body{display:flex;flex-direction:column;height:100vh}
             </div>
           </div>
         </div>
+
+        <!-- SIDEBAR OVERLAY -->
+        <div id="sidebar-overlay"></div>
 
       </div> <!-- /keymap-main -->
     </div>
@@ -842,6 +859,8 @@ var currentSidebarObj = null;
 function openKeySidebar(loc, bName) {
   var sb = document.getElementById('key-sidebar');
   sb.classList.add('open');
+  // Tampilkan overlay
+  document.getElementById('sidebar-overlay').classList.add('on');
 
   document.getElementById('ks-title').innerText = loc;
   document.getElementById('ks-bank').innerText = bName;
@@ -880,6 +899,9 @@ function openKeySidebar(loc, bName) {
 
 function closeKeySidebar() {
   document.getElementById('key-sidebar').classList.remove('open');
+  // Sembunyikan overlay
+  document.getElementById('sidebar-overlay').classList.remove('on');
+  // Reset seleksi tombol
   selK = null;
   updSelVis();
   document.getElementById('status-msg').innerHTML = 'Klik tombol → pilih aksi di bawah';
@@ -912,7 +934,6 @@ function saveKeySidebar() {
 document.getElementById('layout-area').addEventListener('mousedown', function(e) {
   var sb = document.getElementById('key-sidebar');
   if (sb.classList.contains('open')) {
-    // Abaikan klik jika yang diklik adalah elemen interaktif
     if (!e.target.closest('.key') && !e.target.closest('.bico') && !e.target.closest('.btn') && !e.target.closest('.bsel') && !e.target.closest('.cinp')) {
       closeKeySidebar();
     }
@@ -1165,7 +1186,6 @@ function updMidiPicker() {
 }
 
 function populatePicker(){
-  // BASIC KEYS — Opsi F13 dan seterusnya dipindah ke baris paling atas tanpa styling/tag Stream khusus.
   var kbLayout=[
     [{k:'F13'},{k:'F14'},{k:'F15'},{k:'F16'},{k:'F17'},{k:'F18'},{k:'F19'},{k:'F20'},{k:'F21'},{k:'F22'},{k:'F23'},{k:'F24'}],
     [{k:'Esc'},{k:'F1'},{k:'F2'},{k:'F3'},{k:'F4'},{k:'F5'},{k:'F6'},{k:'F7'},{k:'F8'},{k:'F9'},{k:'F10'},{k:'F11'},{k:'F12'},{k:'Del',w:'w-15'}],
